@@ -1,0 +1,120 @@
+# APP DNOTAS
+
+## 🧠 PARTE 0 – **Banco de Dados e Estrutura SQL**
+
+> Vamos usar  a estrutura de banco de dados em PostgreSQL  me passe os comandos para criar as tabelas no banco de dados conforme formos precisando criar elas
+> 
+> 
+> ## 🧩 PARTE 0.1 – **Cadastro e Login de Cliente**
+> 
+> > Desenvolva endpoints/API para:
+> > 
+> > - Cadastro de novo cliente
+> >     - Cria o registro no banco
+> >     - Associa o CNPJ
+> >     - Já configura os dados iniciais para o app
+> > - Login com e CNPJ e SENHA ( o cnpj vai ser o principal parametro para as funciolidades como :
+> >     - Permite acessar o chat e area contabil para ver seus boletos que vao ser pagos e outras funcionalidades
+
+## 🧱 PARTE 1 – **Objetivo Geral do App**
+
+> Desenvolva um aplicativo da empresa que substitua o uso do WhatsApp como canal de comunicação com os clientes. A empresa é responsável por:
+> 
+> - Emissão de vendas dos clientes (NF-e e NFC-e)
+> - Controle contábil e envio de relatórios diários de vendas
+> 
+> O app será usado pelos clientes para:
+> 
+> - Conversar com a empresa (chat)
+> - Solicitar notas fiscais
+> - Receber relatórios
+> - Acompanhar questões financeiras
+> 
+> conforme fomos criando as partes que vao prescisar receber uma resposta da api nos vamos criando as apis na pasta APIS_APP
+> 
+> 🎨 **Inspiração de Estilo (UI/UX): (Acessar pasta REFERENCIAS para ver as imagens de inspiracao do app)**
+> 
+> - **Tema escuro predominante** com elementos contrastantes em branco e cinza.
+> - **Tipografia moderna**, com destaque para números e valores.
+> - **Cartão virtual ou banner central** com logo da empresa.
+> - **Botões de ação diretos e funcionais** ("Enviar", "Receber", "Solicitar NF", etc.).
+> - **Sessão de transações/conversas** com ícones e cores para indicar tipo e status.
+> - **Ícones simples no rodapé** para navegar entre áreas (chat, financeiro, configurações, etc.).
+> 
+> ### **Rodapé com Ícones**
+> 
+> - 💬 `Chat`
+> - 📤 `Solicitar NF`
+> - 📁 `Relatórios`
+> - 📊 `Financeiro`
+> - ⚙️ `Configurações`
+
+---
+
+## 💬 PARTE 2 – **Funcionalidade do Chat com Notificações**
+
+> Implemente uma funcionalidade de chat parecida com o WhatsApp, contendo:
+> 
+> - Histórico de mensagens entre cliente e empresa
+> - Suporte a mensagens de texto, imagem (relatórios), e PDF (NF-e/NFC-e)
+> - Cada mensagem deve conter: tipo, conteúdo, remetente, data/hora
+> - Notificações personalizadas
+>     - Nova mensagem recebida
+>     - Relatório recebido (imagem)
+>     - Nota fiscal recebida (PDF)
+>     - boleto de vencimento vende em X dias
+>     - Usuario nao entra no app a X dias
+
+---
+
+## 🧾 PARTE 3 – **Sistema de Solicitação de NF-e / NFC-e**
+
+> Implemente uma interface onde o cliente possa:
+> 
+> - Clicar em “Solicitar NF-e” ou “Solicitar NFC-e”
+> - Preencher os dados necessários (campos obrigatórios para cada tipo)
+> - Enviar a solicitação para a equipe da empresa
+> 
+> O backend deve:
+> 
+> - Armazenar a solicitação no banco
+> - Permitir alteração do status (pendente, processando, concluído)
+
+---
+
+## 🔄 PARTE 4 – **Integração com API da Empresa**
+
+> Crie uma rota interna protegida no backend para:
+> 
+> - A empresa enviar mensagens automáticas para o cliente via API
+>     - Exemplo: POST /api/mensagem-automatica
+>     - Conteúdo: CNPJ, tipo (imagem ou PDF), link do arquivo, mensagem opcional
+> 
+> Essas mensagens serão exibidas no chat do cliente e gerarão notificações.
+> 
+
+---
+
+## ⏱️ PARTE 5 – **Controle de Inatividade**
+
+> Adicione no backend uma verificação de inatividade por cliente:
+> 
+> - Calcule quantos dias se passaram desde o último login ou interação
+> - Mostre essa informação para a equipe da empresa e enviando uma notificao para o cliente
+> - Pode usar para enviar lembretes ou avisos (futuramente)
+
+---
+
+## 💰 PARTE 6 – **Área Financeira**
+
+> Crie uma seção “Financeiro” com o objetivo de:
+> 
+> - Visualizar boletos, pagamentos pendentes, ou recibos futuros
+> - Backend poderá evoluir conforme demanda contábil
+
+---
+
+## 🔐 PARTE 7 – **Segurança e Boas Práticas**
+
+> Use autenticação via JWTArmazene senhas com bcryptUtilize HTTPSCrie índices por CNPJ no banco para consultas rápidasArmazene arquivos (relatórios/imagens/PDFs) com links temporários ou protegidos
+>

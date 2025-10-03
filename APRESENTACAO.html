@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App DNOTAS - Apresentação do Projeto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .section {
+            padding: 40px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #2a5298;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        .objetivo {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .objetivo h3 {
+            color: #2a5298;
+            margin-bottom: 15px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .partes {
+            counter-reset: parte-counter;
+        }
+
+        .parte {
+            background: white;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+
+        .parte h3 {
+            color: #2a5298;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .parte h3:before {
+            counter-increment: parte-counter;
+            content: "PARTE " counter(parte-counter) " – ";
+            color: #667eea;
+        }
+
+        .parte ul, .parte ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .parte li {
+            margin: 8px 0;
+        }
+
+        .tech-stack {
+            background: #1e3c72;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .tech-stack h4 {
+            margin-bottom: 10px;
+            color: #4ade80;
+        }
+
+        .footer-nav {
+            background: #2d3748;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .footer-nav h3 {
+            margin-bottom: 20px;
+        }
+
+        .nav-icons {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-icon {
+            text-align: center;
+        }
+
+        .nav-icon-symbol {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 20px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 APP DNOTAS</h1>
+            <p>Sistema de Comunicação e Gestão para Clientes</p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">🎯 Objetivo Geral do Projeto</h2>
+            <div class="objetivo">
+                <h3>Substituir o WhatsApp como Canal de Comunicação</h3>
+                <p>Desenvolver um aplicativo proprietário que centralize toda a comunicação entre a empresa e seus clientes, oferecendo funcionalidades específicas para o negócio de emissão de notas fiscais e contabilidade.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>📊 Para a Empresa</h3>
+                    <ul>
+                        <li>Emissão de vendas (NF-e e NFC-e)</li>
+                        <li>Controle contábil completo</li>
+                        <li>Envio automático de relatórios</li>
+                        <li>Gestão de comunicação centralizada</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>👥 Para os Clientes</h3>
+                    <ul>
+                        <li>Chat direto com a empresa</li>
+                        <li>Solicitação de notas fiscais</li>
+                        <li>Recebimento de relatórios</li>
+                        <li>Acompanhamento financeiro</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">🎨 Design e Experiência do Usuário</h2>
+            <div class="highlight">
+                <h4>Inspiração Visual</h4>
+                <p>Interface moderna com tema escuro, inspirada em aplicativos financeiros de última geração.</p>
+            </div>
+
+            <ul style="margin-left: 20px; margin-top: 20px;">
+                <li><strong>Tema escuro predominante</strong> com elementos contrastantes em branco e cinza</li>
+                <li><strong>Tipografia moderna</strong> com destaque para números e valores</li>
+                <li><strong>Cartão virtual central</strong> com logo da empresa</li>
+                <li><strong>Botões de ação diretos</strong> ("Enviar", "Receber", "Solicitar NF")</li>
+                <li><strong>Lista de transações/conversas</strong> com ícones e cores indicando tipo e status</li>
+                <li><strong>Navegação intuitiva</strong> por ícones no rodapé</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">🚀 Funcionalidades Principais</h2>
+
+            <div class="partes">
+                <div class="parte">
+                    <h3>Banco de Dados e Estrutura SQL</h3>
+                    <div class="tech-stack">
+                        <h4>🗄️ Tecnologia: PostgreSQL</h4>
+                        <p>Estrutura de tabelas criada conforme desenvolvimento das funcionalidades</p>
+                    </div>
+                    <ul>
+                        <li>Cadastro de novos clientes no banco de dados</li>
+                        <li>Associação com CNPJ (identificador principal)</li>
+                        <li>Configuração inicial automática do app para cada cliente</li>
+                        <li>Sistema de login com CNPJ e senha</li>
+                    </ul>
+                </div>
+
+                <div class="parte">
+                    <h3>Chat com Notificações Inteligentes</h3>
+                    <p><strong>Interface similar ao WhatsApp com recursos avançados:</strong></p>
+                    <ul>
+                        <li>Histórico completo de mensagens entre cliente e empresa</li>
+                        <li>Suporte a múltiplos formatos: texto, imagem (relatórios) e PDF (notas fiscais)</li>
+                        <li>Metadados de mensagens: tipo, conteúdo, remetente, data/hora</li>
+                    </ul>
+                    <h4 style="margin-top: 15px; color: #2a5298;">Notificações Personalizadas:</h4>
+                    <ul>
+                        <li>🔔 Nova mensagem recebida</li>
+                        <li>📊 Relatório recebido (imagem)</li>
+                        <li>📄 Nota fiscal recebida (PDF)</li>
+                        <li>💰 Boleto vence em X dias</li>
+                        <li>⚠️ Usuário inativo há X dias</li>
+                    </ul>
+                </div>
+
+                <div class="parte">
+                    <h3>Sistema de Solicitação de NF-e / NFC-e</h3>
+                    <p><strong>Interface de solicitação completa:</strong></p>
+                    <ul>
+                        <li>Botões dedicados: "Solicitar NF-e" e "Solicitar NFC-e"</li>
+                        <li>Formulários com campos obrigatórios específicos para cada tipo</li>
+                        <li>Envio direto para equipe da empresa</li>
+                    </ul>
+                    <h4 style="margin-top: 15px; color: #2a5298;">Backend:</h4>
+                    <ul>
+                        <li>Armazenamento de solicitações no banco de dados</li>
+                        <li>Controle de status: pendente, processando, concluído</li>
+                        <li>Histórico completo de solicitações por cliente</li>
+                    </ul>
+                </div>
+
+                <div class="parte">
+                    <h3>Integração com API da Empresa</h3>
+                    <p><strong>Rotas internas protegidas para automação:</strong></p>
+                    <ul>
+                        <li>Endpoint para envio de mensagens automáticas da empresa para clientes</li>
+                        <li>Formato: POST /api/mensagem-automatica</li>
+                        <li>Parâmetros: CNPJ, tipo (imagem/PDF), link do arquivo, mensagem opcional</li>
+                        <li>Integração automática com chat e sistema de notificações</li>
+                    </ul>
+                </div>
+
+                <div class="parte">
+                    <h3>Controle de Inatividade</h3>
+                    <ul>
+                        <li>Rastreamento automático de último login/interação de cada cliente</li>
+                        <li>Cálculo de dias de inatividade</li>
+                        <li>Dashboard para equipe visualizar clientes inativos</li>
+                        <li>Envio de notificações para clientes inativos</li>
+                        <li>Base para campanhas de reengajamento futuras</li>
+                    </ul>
+                </div>
+
+                <div class="parte">
+                    <h3>Área Financeira</h3>
+                    <p><strong>Seção dedicada "Financeiro" contendo:</strong></p>
+                    <ul>
+                        <li>Visualização de boletos pendentes</li>
+                        <li>Histórico de pagamentos realizados</li>
+                        <li>Recibos e comprovantes</li>
+                        <li>Projeções e alertas de vencimento</li>
+                        <li>Estrutura expansível conforme demandas contábeis futuras</li>
+                    </ul>
+                </div>
+
+                <div class="parte">
+                    <h3>Segurança e Boas Práticas</h3>
+                    <div class="tech-stack">
+                        <h4>🔐 Tecnologias de Segurança</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li>✓ <strong>JWT</strong> para autenticação de sessões</li>
+                            <li>✓ <strong>bcrypt</strong> para hash de senhas</li>
+                            <li>✓ <strong>HTTPS</strong> obrigatório para todas as comunicações</li>
+                            <li>✓ <strong>Índices otimizados</strong> por CNPJ no banco de dados</li>
+                            <li>✓ <strong>Links protegidos</strong> para arquivos (temporários ou autenticados)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">📐 Arquitetura do Sistema</h2>
+            <div style="margin-top: 20px;">
+                <h4 style="color: #2a5298; margin-bottom: 10px;">Estrutura de Pastas:</h4>
+                <pre style="background: #f8f9fa; padding: 20px; border-radius: 5px; overflow-x: auto;">
+DNOTAS_APP/
+├── APIS_APP/          # Backend com endpoints da API
+├── REFERENCIAS/       # Referências visuais e logo
+└── README            # Especificação completa do projeto
+                </pre>
+
+                <h4 style="color: #2a5298; margin: 20px 0 10px 0;">Fluxo de Desenvolvimento:</h4>
+                <ol style="margin-left: 20px;">
+                    <li>Criação incremental de tabelas PostgreSQL conforme necessidade</li>
+                    <li>Desenvolvimento de APIs na pasta APIS_APP para cada funcionalidade</li>
+                    <li>Identificador principal: <strong>CNPJ</strong> (todas as operações filtradas por CNPJ)</li>
+                    <li>Frontend consome APIs e exibe dados formatados</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="footer-nav">
+            <h3>Rodapé do Aplicativo - Navegação Principal</h3>
+            <div class="nav-icons">
+                <div class="nav-icon">
+                    <div class="nav-icon-symbol">💬</div>
+                    <div>Chat</div>
+                </div>
+                <div class="nav-icon">
+                    <div class="nav-icon-symbol">📤</div>
+                    <div>Solicitar NF</div>
+                </div>
+                <div class="nav-icon">
+                    <div class="nav-icon-symbol">📁</div>
+                    <div>Relatórios</div>
+                </div>
+                <div class="nav-icon">
+                    <div class="nav-icon-symbol">📊</div>
+                    <div>Financeiro</div>
+                </div>
+                <div class="nav-icon">
+                    <div class="nav-icon-symbol">⚙️</div>
+                    <div>Configurações</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white;">
+            <h2 style="color: white; border-color: white;" class="section-title">✅ Benefícios do Projeto</h2>
+            <div class="features-grid" style="margin-top: 30px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #4ade80; margin-bottom: 10px;">Para a Empresa</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✓ Comunicação centralizada e profissional</li>
+                        <li>✓ Redução de custos com WhatsApp Business</li>
+                        <li>✓ Automação de envio de documentos</li>
+                        <li>✓ Controle total sobre a plataforma</li>
+                        <li>✓ Dados e métricas de uso dos clientes</li>
+                    </ul>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #4ade80; margin-bottom: 10px;">Para os Clientes</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✓ App dedicado e profissional</li>
+                        <li>✓ Acesso 24/7 a documentos e relatórios</li>
+                        <li>✓ Notificações importantes automatizadas</li>
+                        <li>✓ Interface moderna e intuitiva</li>
+                        <li>✓ Controle financeiro em tempo real</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
