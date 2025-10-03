@@ -43,6 +43,18 @@ This is a **greenfield project** being built incrementally. The README file cont
 - CNPJ is the primary identifier for client-related operations
 - Create tables incrementally as features are developed (see README PARTE 0)
 
+### Multi-Branch Architecture (Matriz/Filiais)
+- The company operates with **headquarters (Matriz)** and **branches (Filiais)**
+- Each branch manages its own set of clients independently
+- **Data isolation by branch**:
+  - Matriz sees only matriz clients (e.g., 100 clients)
+  - Filial 1 sees only filial 1 clients (e.g., 50 clients)
+  - Filial 2 sees only filial 2 clients (e.g., 75 clients)
+- **SITE/ login authentication** must include branch identification
+- All database queries for client management must filter by branch/filial
+- Each employee/user account is associated with a specific branch
+- Branch ID must be stored alongside CNPJ for proper data segregation
+
 ### Authentication & Security
 - JWT for authentication
 - bcrypt for password hashing
@@ -82,7 +94,10 @@ Reference designs are in `REFERENCIAS/`. The app should have:
 2. API endpoints should be created in `APIS_APP/` as features require them
 3. Database schemas should be generated using PostgreSQL CREATE TABLE commands when needed
 4. Follow the sequential part structure (PARTE 0 → PARTE 7)
-5. CNPJ-based data isolation is critical—all client operations filter by CNPJ
+5. **Data isolation is critical**:
+   - All client operations filter by CNPJ
+   - All management operations (SITE) filter by Branch/Filial ID
+   - Employee accounts are tied to specific branches
 
 ## Important Notes
 
@@ -105,6 +120,11 @@ Reference designs are in `REFERENCIAS/`. The app should have:
 - Built with Vue.js
 - Features: Client management, message broadcasting, request handling, analytics
 - Administrative panel to manage all client interactions
+- **Branch-based access control**:
+  - Login requires branch/filial identification
+  - Users only see and manage clients from their assigned branch
+  - Matriz employees manage matriz clients only
+  - Filial employees manage their respective filial clients only
 
 ### APIS_APP/ (Backend)
 - RESTful API serving both APP and SITE
