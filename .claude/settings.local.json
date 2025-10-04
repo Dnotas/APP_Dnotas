@@ -9,7 +9,11 @@
       "Bash(cp:*)",
       "Bash(flutter analyze:*)",
       "Bash(flutter run:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(chmod:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
