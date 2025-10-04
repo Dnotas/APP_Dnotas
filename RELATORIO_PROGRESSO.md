@@ -1,8 +1,5 @@
 # 📊 RELATÓRIO DE PROGRESSO - APP DNOTAS
 
-## 🚀 **STATUS ATUAL: APIS BACKEND IMPLEMENTADAS - MVP PRONTO**
-
-Este projeto teve um **grande avanço** com a implementação completa do backend. As APIs estão **100% funcionais** e prontas para o MVP.
 
 ---
 
@@ -32,9 +29,8 @@ Este projeto teve um **grande avanço** com a implementação completa do backen
   - Estatísticas avançadas e paginação
   
 - ✅ **API da Área Financeira**
-  - Sistema completo de boletos (criar, consultar, pagar, cancelar)
+  - Sistema completo de boletos ( consultar, pagar)
   - Controle de status e vencimentos
-  - Estatísticas financeiras e extratos
   - Verificação automática de boletos vencendo
   
 - ✅ **Sistema de Notificações Push**
@@ -48,15 +44,7 @@ Este projeto teve um **grande avanço** com a implementação completa do backen
   - Middleware de autorização
   - Filtros automáticos por CNPJ e filial
   - Gestão de tokens FCM
-  
-- ✅ **Arquitetura Profissional**
-  - TypeScript + Express.js
-  - PostgreSQL com schema otimizado
-  - Documentação Swagger completa
-  - Docker + docker-compose
-  - Rate limiting e segurança
-  - Error handling robusto
-  - Scripts de setup automático
+
 
 ---
 
