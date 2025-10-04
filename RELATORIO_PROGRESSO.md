@@ -23,15 +23,10 @@
 
 ### **🎉 APIS_APP/ - Backend Completo (RECÉM IMPLEMENTADO)**
 - ✅ **API de Relatórios de Vendas Diárias**
-  - Endpoints completos para criar, consultar e filtrar relatórios
+  - Endpoints completos para  consultar e filtrar relatórios
   - Suporte a débito, crédito, dinheiro, PIX, vale
   - Relatório do dia atual (ideal para tela inicial)
-  - Estatísticas avançadas e paginação
-  
-- ✅ **API da Área Financeira**
-  - Sistema completo de boletos ( consultar, pagar)
-  - Controle de status e vencimentos
-  - Verificação automática de boletos vencendo
+ 
   
 - ✅ **Sistema de Notificações Push**
   - Integração Firebase Cloud Messaging
