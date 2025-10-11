@@ -116,10 +116,13 @@
                     class="input-field"
                   >
                     <option value="">Selecione a filial</option>
-                    <option value="matriz">🏢 Matriz DNOTAS</option>
-                    <option value="filial_centro">🏪 Filial Centro</option>
-                    <option value="filial_norte">🏪 Filial Norte</option>
-                    <option value="filial_sul">🏪 Filial Sul</option>
+                    <option 
+                      v-for="filial in filiais" 
+                      :key="filial.id" 
+                      :value="filial.id"
+                    >
+                      {{ filial.tipo === 'matriz' ? '🏢' : '🏪' }} {{ filial.nome }}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -152,6 +155,13 @@
                   Entrar no Sistema
                 </span>
               </button>
+
+              <router-link
+                to="/register"
+                class="w-full btn-secondary text-center block"
+              >
+                + Cadastrar Novo Funcionário
+              </router-link>
             </form>
 
           </div>
@@ -162,9 +172,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { funcionariosService } from '@/services/funcionarios'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -172,6 +183,15 @@ const authStore = useAuthStore()
 const email = ref('')
 const password = ref('')
 const filialId = ref('')
+const filiais = ref<Array<{id: string, nome: string}>>([])
+
+// Carregar filiais ao montar o componente
+onMounted(async () => {
+  const response = await funcionariosService.getFiliais()
+  if (response.success) {
+    filiais.value = response.filiais
+  }
+})
 
 const handleLogin = async () => {
   authStore.clearError()
