@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
@@ -8,7 +8,7 @@ import ReportsView from '@/views/ReportsView.vue'
 import FinancialView from '@/views/FinancialView.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory('/APP_Dnotas/'),
   routes: [
     {
       path: '/',
