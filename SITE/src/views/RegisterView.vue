@@ -86,6 +86,7 @@
                   v-model="form.filial_id"
                   required
                   class="input-field"
+                  @change="console.log('Filial selecionada:', form.filial_id)"
                 >
                   <option value="">Selecione a filial</option>
                   <option 
@@ -172,6 +173,7 @@
                 type="submit"
                 :disabled="isLoading"
                 class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="console.log('Botão clicado!')"
               >
                 <span v-if="isLoading" class="flex items-center justify-center">
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -221,13 +223,24 @@ const success = ref(false)
 
 // Carregar filiais
 onMounted(async () => {
-  const response = await funcionariosService.getFiliais()
-  if (response.success) {
-    filiais.value = response.filiais
+  console.log('RegisterView: Carregando filiais...')
+  try {
+    const response = await funcionariosService.getFiliais()
+    console.log('RegisterView: Resposta getFiliais:', response)
+    if (response.success) {
+      filiais.value = response.filiais
+      console.log('RegisterView: Filiais carregadas:', filiais.value)
+    } else {
+      console.error('RegisterView: Erro ao carregar filiais:', response.error)
+    }
+  } catch (error) {
+    console.error('RegisterView: Erro na requisição:', error)
   }
 })
 
 const handleRegister = async () => {
+  console.log('RegisterView: handleRegister chamado')
+  
   if (form.value.senha !== confirmarSenha.value) {
     error.value = 'As senhas não coincidem'
     return
@@ -243,7 +256,9 @@ const handleRegister = async () => {
     error.value = ''
     success.value = false
 
+    console.log('RegisterView: Dados do formulário:', form.value)
     const response = await funcionariosService.criarFuncionario(form.value)
+    console.log('RegisterView: Resposta do cadastro:', response)
     
     if (response.success) {
       success.value = true

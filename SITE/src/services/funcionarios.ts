@@ -231,11 +231,14 @@ class FuncionariosService {
   // Buscar filiais
   async getFiliais() {
     try {
+      console.log('FuncionariosService: Buscando filiais...')
       const { data, error } = await supabase
         .from('filiais')
         .select('*')
         .eq('ativo', true)
         .order('nome')
+
+      console.log('FuncionariosService: Resposta Supabase filiais:', { data, error })
 
       if (error) throw error
 
