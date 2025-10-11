@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white font-inter;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  * {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 border border-gray-700;
+  }
+  
+  .card {
+    @apply bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700/50 p-6;
+  }
+  
+  .card-glass {
+    @apply bg-gray-800/30 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-700/30 p-6;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400 transition-all duration-200;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center px-4 py-3 mx-2 rounded-xl transition-all duration-200 relative overflow-hidden;
+  }
+  
+  .sidebar-item.active {
+    @apply bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-400 border border-blue-500/30;
+  }
+  
+  .sidebar-item:not(.active) {
+    @apply text-gray-400 hover:text-white hover:bg-gray-800/50;
+  }
+  
+  .glow-effect {
+    @apply relative;
+  }
+  
+  .glow-effect::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 transition-opacity duration-300;
+  }
+  
+  .glow-effect:hover::before {
+    @apply opacity-100;
+  }
+  
+  .stat-card {
+    @apply relative overflow-hidden bg-gradient-to-br p-6 rounded-2xl border transition-all duration-300 hover:scale-105;
+  }
+  
+  .stat-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br opacity-10;
+  }
+}
