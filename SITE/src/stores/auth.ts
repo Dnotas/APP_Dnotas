@@ -2,9 +2,10 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User } from '@/types'
 import { apiService } from '@/services/api'
+import { funcionariosService, type Funcionario } from '@/services/funcionarios'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
+  const user = ref<Funcionario | null>(null)
   const token = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -22,88 +23,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const login = async (email: string, password: string, filialId: string) => {
+  const login = async (email: string, password: string, filialId?: string) => {
     try {
       isLoading.value = true
       error.value = null
       
-      // Simulação de login para funcionários (para demonstração)
-      const funcionarios = [
-        {
-          email: 'admin@dnotas.com',
-          password: 'admin123',
-          filial: 'matriz',
-          user: {
-            id: '1',
-            nome: 'Administrador',
-            email: 'admin@dnotas.com',
-            filial_id: 'matriz',
-            filial_nome: 'Matriz',
-            role: 'admin'
-          }
-        },
-        {
-          email: 'gestor@dnotas.com', 
-          password: 'gestor123',
-          filial: 'matriz',
-          user: {
-            id: '2',
-            nome: 'Gestor Matriz',
-            email: 'gestor@dnotas.com',
-            filial_id: 'matriz',
-            filial_nome: 'Matriz',
-            role: 'manager'
-          }
-        },
-        {
-          email: 'filial1@dnotas.com',
-          password: 'filial123',
-          filial: 'filial_1',
-          user: {
-            id: '3',
-            nome: 'Operador Filial 1',
-            email: 'filial1@dnotas.com',
-            filial_id: 'filial_1',
-            filial_nome: 'Filial 1',
-            role: 'operator'
-          }
-        },
-        {
-          email: 'filial2@dnotas.com',
-          password: 'filial123', 
-          filial: 'filial_2',
-          user: {
-            id: '4',
-            nome: 'Operador Filial 2',
-            email: 'filial2@dnotas.com',
-            filial_id: 'filial_2',
-            filial_nome: 'Filial 2',
-            role: 'operator'
-          }
+      const response = await funcionariosService.login(email, password)
+      
+      if (response.success && response.funcionario) {
+        // Verificar se filial selecionada corresponde à filial do funcionário
+        if (filialId && response.funcionario.filial_id !== filialId) {
+          error.value = 'Funcionário não pertence à filial selecionada'
+          return false
         }
-      ]
-      
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const funcionario = funcionarios.find(f => 
-        f.email === email && 
-        f.password === password && 
-        f.filial === filialId
-      )
-      
-      if (funcionario) {
-        user.value = funcionario.user
-        token.value = 'demo_token_' + Date.now()
+        
+        user.value = response.funcionario
+        token.value = 'func_token_' + Date.now()
         
         localStorage.setItem('auth_token', token.value)
-        localStorage.setItem('auth_user', JSON.stringify(funcionario.user))
+        localStorage.setItem('auth_user', JSON.stringify(response.funcionario))
         
         apiService.setAuthToken(token.value)
         
         return true
       } else {
-        error.value = 'Email, senha ou filial incorretos'
+        error.value = response.error || 'Erro ao fazer login'
         return false
       }
     } catch (err) {
