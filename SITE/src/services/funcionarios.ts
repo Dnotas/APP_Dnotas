@@ -58,11 +58,11 @@ class FuncionariosService {
         return { success: false, error: 'Credenciais inválidas' }
       }
 
-      // Aqui você faria a verificação da senha com bcrypt
-      // Por enquanto, vamos simular (em produção usar bcrypt.compare)
+      // Verificação simples da senha (em produção usar bcrypt.compare)
+      // Por enquanto as senhas estão em texto plano no banco para teste
       const senhasValidas: { [key: string]: string } = {
         'admin@dnotas.com': 'admin123',
-        'gestor@dnotas.com': 'gestor123',
+        'gestor@dnotas.com': 'gestor123', 
         'maria.silva@dnotas.com': 'funcionario123',
         'joao.santos@dnotas.com': 'funcionario123',
         'ana.costa@dnotas.com': 'funcionario123',

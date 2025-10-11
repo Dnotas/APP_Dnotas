@@ -116,9 +116,10 @@
                     class="input-field"
                   >
                     <option value="">Selecione a filial</option>
-                    <option value="matriz">🏢 Matriz</option>
-                    <option value="filial_1">🏪 Filial 1</option>
-                    <option value="filial_2">🏪 Filial 2</option>
+                    <option value="matriz">🏢 Matriz DNOTAS</option>
+                    <option value="filial_centro">🏪 Filial Centro</option>
+                    <option value="filial_norte">🏪 Filial Norte</option>
+                    <option value="filial_sul">🏪 Filial Sul</option>
                   </select>
                 </div>
               </div>
