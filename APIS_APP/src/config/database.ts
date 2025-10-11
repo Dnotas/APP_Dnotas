@@ -1,30 +1,52 @@
-import { Pool, PoolConfig } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const dbConfig: PoolConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'dnotas_db',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  max: 20, // máximo de conexões no pool
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+const supabaseUrl = process.env.SUPABASE_URL || 'https://cqqeylhspmpilzgmqfiu.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcWV5bGhzcG1waWx6Z21xZml1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxODE1NywiZXhwIjoyMDc1MDk0MTU3fQ.TiH1LEOH7i7tT2fCjfSr2GP12-JwIU3v6EYtyQotZBI';
+
+export const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Para compatibilidade com código existente que usa pool
+export const pool = {
+  query: async (text: string, params?: any[]) => {
+    console.log('🔍 Supabase Query:', text.substring(0, 100));
+    
+    // Converter query PostgreSQL para Supabase quando necessário
+    if (text.includes('SELECT') && text.includes('FROM')) {
+      const tableName = extractTableName(text);
+      return await executeSupabaseQuery(tableName, text, params);
+    }
+    
+    // Para queries mais complexas, usar rpc se necessário
+    throw new Error('Query complexa não suportada - use métodos específicos do Supabase');
+  },
+  
+  connect: () => ({
+    query: pool.query,
+    release: () => {},
+  }),
+  
+  end: async () => {
+    console.log('🔌 Conexões com Supabase finalizadas');
+  }
 };
 
-export const pool = new Pool(dbConfig);
+function extractTableName(query: string): string {
+  const match = query.match(/FROM\s+(\w+)/i);
+  return match ? match[1] : '';
+}
 
-// Event listeners para monitoramento
-pool.on('connect', () => {
-  console.log('🔌 Nova conexão estabelecida com PostgreSQL');
-});
-
-pool.on('error', (err) => {
-  console.error('❌ Erro inesperado no cliente PostgreSQL:', err);
-  process.exit(-1);
-});
+async function executeSupabaseQuery(tableName: string, query: string, params?: any[]) {
+  // Implementação básica para queries simples
+  if (query.includes('SELECT') && tableName) {
+    const { data, error } = await supabase.from(tableName).select('*');
+    if (error) throw error;
+    return { rows: data };
+  }
+  
+  throw new Error('Query não suportada - use métodos específicos do Supabase');
+}
 
 export default pool;

@@ -20,9 +20,9 @@ export class DatabaseService {
     const instance = DatabaseService.getInstance();
     try {
       await instance.pool.query('SELECT NOW()');
-      console.log('✅ Conexão com PostgreSQL estabelecida');
+      console.log('✅ Conexão com Supabase PostgreSQL estabelecida');
     } catch (error) {
-      console.error('❌ Erro ao conectar com PostgreSQL:', error);
+      console.error('❌ Erro ao conectar com Supabase:', error);
       throw error;
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/supabase_service.dart';
+import 'services/notification_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'providers/auth_provider.dart';
@@ -12,6 +13,9 @@ void main() async {
   
   // Inicializar Supabase
   await SupabaseService.initialize();
+  
+  // Inicializar notificações
+  await NotificationService.initialize();
   
   runApp(const DNotasApp());
 }

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import '../services/api_service.dart';
 import '../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
   UserModel? _currentUser;
   bool _isLoading = true;
   String? _errorMessage;
+  String? _authToken;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _currentUser != null;
   String? get errorMessage => _errorMessage;
+  String? get token => _authToken ?? Supabase.instance.client.auth.currentSession?.accessToken;
 
   AuthProvider() {
     _initialize();
@@ -40,6 +43,18 @@ class AuthProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
+      // Primeiro tenta com API real
+      final apiResponse = await ApiService.login(cnpj, password);
+      
+      if (apiResponse != null && apiResponse['success'] == true) {
+        _authToken = apiResponse['data']['token'];
+        _currentUser = UserModel.fromJson(apiResponse['data']['user']);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      
+      // Fallback para Supabase se API falhar
       final response = await SupabaseService.signInWithCnpjAndPassword(
         cnpj: cnpj,
         password: password,
@@ -64,7 +79,46 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // SignUp removido - clientes são cadastrados pela empresa
+  Future<bool> signUp({
+    required String cnpj,
+    required String nomeEmpresa,
+    required String email,
+    required String password,
+    required String filialId,
+    String? telefone,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final response = await SupabaseService.signUpWithCnpj(
+        cnpj: cnpj,
+        nomeEmpresa: nomeEmpresa,
+        email: email,
+        password: password,
+        filialId: filialId,
+        telefone: telefone,
+      );
+
+      if (response != null) {
+        _currentUser = UserModel.fromJson(response);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = 'Erro ao criar conta';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 
   Future<void> signOut() async {
     try {

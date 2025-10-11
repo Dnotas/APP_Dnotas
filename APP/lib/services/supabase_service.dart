@@ -54,6 +54,55 @@ class SupabaseService {
     }
   }
   
+  static Future<Map<String, dynamic>?> signUpWithCnpj({
+    required String cnpj,
+    required String nomeEmpresa,
+    required String email,
+    required String password,
+    required String filialId,
+    String? telefone,
+  }) async {
+    try {
+      // Verificar se CNPJ já existe
+      final existingClient = await client
+          .from('clientes')
+          .select('id')
+          .eq('cnpj', cnpj)
+          .maybeSingle();
+      
+      if (existingClient != null) {
+        throw Exception('CNPJ já cadastrado');
+      }
+      
+      // Criar novo cliente
+      final newClient = {
+        'cnpj': cnpj,
+        'nome_empresa': nomeEmpresa,
+        'email': email,
+        'senha': password,
+        'filial_id': filialId,
+        'telefone': telefone,
+        'is_active': true,
+        'created_at': DateTime.now().toIso8601String(),
+      };
+      
+      final response = await client
+          .from('clientes')
+          .insert(newClient)
+          .select()
+          .single();
+      
+      if (response != null) {
+        _currentUserId = response['id'];
+        return response;
+      }
+      
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
+  
   static Future<void> signOut() async {
     _currentUserId = null;
   }

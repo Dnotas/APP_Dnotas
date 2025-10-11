@@ -1,71 +1,66 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { DatabaseService } from './DatabaseService';
+import { SupabaseService } from './SupabaseService';
 import { User, AuthToken, LoginCredentials, RegisterData } from '../types';
 
 export class AuthService {
-  private db: DatabaseService;
+  private supabase: SupabaseService;
 
   constructor() {
-    this.db = DatabaseService.getInstance();
+    this.supabase = SupabaseService.getInstance();
   }
 
   async login(cnpj: string, senha: string, fcm_token?: string): Promise<AuthToken> {
-    // Buscar usuário por CNPJ
-    const query = `
-      SELECT u.*, f.nome as filial_nome 
-      FROM users u
-      JOIN filiais f ON u.filial_id = f.id
-      WHERE u.cnpj = $1 AND u.ativo = true
-    `;
+    try {
+      // Buscar cliente por CNPJ usando Supabase
+      const { data: cliente, error } = await this.supabase.getClienteByCnpj(cnpj);
 
-    const result = await this.db.query<User>(query, [cnpj]);
+      if (error || !cliente || !cliente.is_active) {
+        throw new Error('Credenciais inválidas');
+      }
 
-    if (result.rows.length === 0) {
-      throw new Error('Credenciais inválidas');
+      // Verificar senha
+      const senhaValida = await bcrypt.compare(senha, cliente.senha);
+      if (!senhaValida) {
+        throw new Error('Credenciais inválidas');
+      }
+
+      // Atualizar último acesso e FCM token se fornecido
+      const updateData: any = { last_login: new Date().toISOString() };
+      if (fcm_token) {
+        updateData.fcm_token = fcm_token;
+      }
+
+      await this.supabase.executeQuery('clientes', 'update', updateData, { id: cliente.id });
+
+      // Gerar JWT
+      const token = this.generateToken(cliente.id);
+
+      // Remover senha do objeto user
+      const { senha: _, ...userSemSenha } = cliente;
+
+      return {
+        token,
+        expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+        user: userSemSenha
+      };
+    } catch (error) {
+      throw new Error('Erro no login: ' + (error as Error).message);
     }
-
-    const user = result.rows[0];
-
-    // Verificar senha
-    const senhaValida = await bcrypt.compare(senha, user.senha);
-    if (!senhaValida) {
-      throw new Error('Credenciais inválidas');
-    }
-
-    // Atualizar último acesso e FCM token se fornecido
-    const updateQuery = fcm_token 
-      ? 'UPDATE users SET ultimo_acesso = CURRENT_TIMESTAMP, fcm_token = $2 WHERE id = $1'
-      : 'UPDATE users SET ultimo_acesso = CURRENT_TIMESTAMP WHERE id = $1';
-    
-    const updateParams = fcm_token ? [user.id, fcm_token] : [user.id];
-    await this.db.query(updateQuery, updateParams);
-
-    // Gerar JWT
-    const token = this.generateToken(user.id);
-
-    // Remover senha do objeto user
-    const { senha: _, ...userSemSenha } = user;
-
-    return {
-      token,
-      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
-      user: userSemSenha
-    };
   }
 
   async register(data: RegisterData & { fcm_token?: string }): Promise<AuthToken> {
-    const { cnpj, nome, email, telefone, senha, filial_id, fcm_token } = data;
+    const { cnpj, nome_empresa, email, telefone, senha, filial_id, fcm_token } = data;
 
-    // Verificar se usuário já existe
+    // Verificar se cliente já existe
     const existingUser = await this.db.query(
-      'SELECT id FROM users WHERE cnpj = $1 OR email = $2',
+      'SELECT id FROM clientes WHERE cnpj = $1 OR email = $2',
       [cnpj, email]
     );
 
     if (existingUser.rows.length > 0) {
-      throw new Error('Usuário com este CNPJ ou email já existe');
+      throw new Error('Cliente com este CNPJ ou email já existe');
     }
 
     // Verificar se filial existe
@@ -77,23 +72,23 @@ export class AuthService {
     // Hash da senha
     const senhaHash = await bcrypt.hash(senha, 12);
 
-    // Inserir usuário
+    // Inserir cliente
     const insertQuery = `
-      INSERT INTO users (cnpj, nome, email, telefone, senha, filial_id, fcm_token, ativo)
+      INSERT INTO clientes (cnpj, nome_empresa, email, telefone, senha, filial_id, fcm_token, is_active)
       VALUES ($1, $2, $3, $4, $5, $6, $7, true)
-      RETURNING id, cnpj, nome, email, telefone, filial_id, ativo, created_at
+      RETURNING id, cnpj, nome_empresa, email, telefone, filial_id, is_active, created_at
     `;
 
-    const insertParams = [cnpj, nome, email, telefone, senhaHash, filial_id, fcm_token || null];
+    const insertParams = [cnpj, nome_empresa, email, telefone, senhaHash, filial_id, fcm_token || null];
     const result = await this.db.query<User>(insertQuery, insertParams);
     const newUser = result.rows[0];
 
     // Buscar dados completos com filial
     const userQuery = `
-      SELECT u.*, f.nome as filial_nome 
-      FROM users u
-      JOIN filiais f ON u.filial_id = f.id
-      WHERE u.id = $1
+      SELECT c.*, f.nome as filial_nome 
+      FROM clientes c
+      JOIN filiais f ON c.filial_id = f.id
+      WHERE c.id = $1
     `;
     const userResult = await this.db.query<User>(userQuery, [newUser.id]);
     const user = userResult.rows[0];
@@ -121,12 +116,12 @@ export class AuthService {
       // Verificar token atual (ignora expiração)
       const decoded = jwt.verify(currentToken, jwtSecret, { ignoreExpiration: true }) as any;
       
-      // Buscar usuário
+      // Buscar cliente
       const query = `
-        SELECT u.*, f.nome as filial_nome 
-        FROM users u
-        JOIN filiais f ON u.filial_id = f.id
-        WHERE u.id = $1 AND u.ativo = true
+        SELECT c.*, f.nome as filial_nome 
+        FROM clientes c
+        JOIN filiais f ON c.filial_id = f.id
+        WHERE c.id = $1 AND c.is_active = true
       `;
 
       const result = await this.db.query<User>(query, [decoded.userId]);
@@ -170,12 +165,12 @@ export class AuthService {
   }
 
   async forgotPassword(cnpj: string, email: string): Promise<void> {
-    // Buscar usuário
-    const query = 'SELECT id, email FROM users WHERE cnpj = $1 AND email = $2 AND ativo = true';
+    // Buscar cliente
+    const query = 'SELECT id, email FROM clientes WHERE cnpj = $1 AND email = $2 AND is_active = true';
     const result = await this.db.query(query, [cnpj, email]);
 
     if (result.rows.length === 0) {
-      // Por segurança, não revelar se o usuário existe
+      // Por segurança, não revelar se o cliente existe
       return;
     }
 
@@ -188,7 +183,7 @@ export class AuthService {
 
     // Salvar token na base de dados
     await this.db.query(
-      'UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3',
+      'UPDATE clientes SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3',
       [resetToken, resetTokenExpiry, user.id]
     );
 
@@ -198,12 +193,12 @@ export class AuthService {
   }
 
   async resetPassword(token: string, novaSenha: string): Promise<void> {
-    // Buscar usuário pelo token
+    // Buscar cliente pelo token
     const query = `
-      SELECT id FROM users 
+      SELECT id FROM clientes 
       WHERE reset_token = $1 
       AND reset_token_expiry > CURRENT_TIMESTAMP 
-      AND ativo = true
+      AND is_active = true
     `;
 
     const result = await this.db.query(query, [token]);
@@ -219,8 +214,8 @@ export class AuthService {
 
     // Atualizar senha e limpar token
     await this.db.query(
-      `UPDATE users 
-       SET senha = $1, reset_token = NULL, reset_token_expiry = NULL, updated_at = CURRENT_TIMESTAMP
+      `UPDATE clientes 
+       SET senha = $1, reset_token = NULL, reset_token_expiry = NULL
        WHERE id = $2`,
       [senhaHash, user.id]
     );
@@ -236,7 +231,7 @@ export class AuthService {
       const decoded = jwt.verify(jwtToken, jwtSecret) as any;
       
       await this.db.query(
-        'UPDATE users SET fcm_token = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        'UPDATE clientes SET fcm_token = $1 WHERE id = $2',
         [fcmToken, decoded.userId]
       );
     } catch (error) {

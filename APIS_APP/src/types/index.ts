@@ -14,27 +14,30 @@ export interface ApiResponse<T = any> {
 export interface User {
   id: string;
   cnpj: string;
-  nome: string;
+  nome_empresa: string;
   email: string;
-  telefone: string;
+  telefone?: string;
   filial_id: string;
-  ativo: boolean;
-  ultimo_acesso?: Date;
+  is_active: boolean;
+  last_login?: Date;
+  fcm_token?: string;
+  reset_token?: string;
+  reset_token_expiry?: Date;
   created_at: Date;
-  updated_at: Date;
 }
 
 export interface Filial {
   id: string;
   nome: string;
-  codigo: string;
-  ativo: boolean;
+  codigo?: string;
+  cnpj_empresa?: string;
+  ativo?: boolean;
   created_at: Date;
-  updated_at: Date;
 }
 
 export interface RelatorioVendas {
   id: string;
+  cliente_id: string;
   cliente_cnpj: string;
   filial_id: string;
   data_relatorio: Date;
@@ -45,10 +48,12 @@ export interface RelatorioVendas {
   vendas_vale: number;
   total_vendas: number;
   created_at: Date;
+  updated_at?: Date;
 }
 
 export interface Boleto {
   id: string;
+  cliente_id: string;
   cliente_cnpj: string;
   filial_id: string;
   numero_boleto: string;
@@ -59,7 +64,7 @@ export interface Boleto {
   linha_digitavel: string;
   codigo_barras: string;
   created_at: Date;
-  updated_at: Date;
+  updated_at?: Date;
 }
 
 export interface Notification {
@@ -87,9 +92,9 @@ export interface LoginCredentials {
 
 export interface RegisterData {
   cnpj: string;
-  nome: string;
+  nome_empresa: string;
   email: string;
-  telefone: string;
+  telefone?: string;
   senha: string;
   filial_id: string;
 }

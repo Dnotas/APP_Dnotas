@@ -21,17 +21,27 @@ export class ReportsService {
     vendas_pix: number;
     vendas_vale: number;
   }): Promise<RelatorioVendas> {
+    // Buscar cliente_id pelo CNPJ
+    const clienteQuery = 'SELECT id FROM clientes WHERE cnpj = $1 AND filial_id = $2';
+    const clienteResult = await this.db.query(clienteQuery, [data.cliente_cnpj, data.filial_id]);
+    
+    if (clienteResult.rows.length === 0) {
+      throw new Error('Cliente não encontrado');
+    }
+    
+    const cliente_id = clienteResult.rows[0].id;
     const total_vendas = data.vendas_debito + data.vendas_credito + data.vendas_dinheiro + data.vendas_pix + data.vendas_vale;
 
     const query = `
       INSERT INTO relatorios_vendas (
-        cliente_cnpj, filial_id, data_relatorio, vendas_debito, 
+        cliente_id, cliente_cnpj, filial_id, data_relatorio, vendas_debito, 
         vendas_credito, vendas_dinheiro, vendas_pix, vendas_vale, total_vendas
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
 
     const params = [
+      cliente_id,
       data.cliente_cnpj,
       data.filial_id,
       data.data_relatorio,
@@ -61,6 +71,7 @@ export class ReportsService {
     filial_id: string,
     filters: RelatorioFilters = {}
   ): Promise<ApiResponse<RelatorioVendas[]>> {
+
     const {
       page = 1,
       limit = 10,

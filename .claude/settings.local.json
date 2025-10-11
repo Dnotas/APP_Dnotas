@@ -13,7 +13,21 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(chmod:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(npm install:*)",
+      "Bash(timeout 10s npm run demo)",
+      "Bash(npm create:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(open http://localhost:3005)",
+      "Bash(lsof:*)",
+      "Bash(node:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(npm run preview:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

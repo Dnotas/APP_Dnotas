@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_theme.dart';
+import 'reports_screen.dart';
+import 'chat_screen.dart';
+import 'financial_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,24 +112,6 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // Telas temporárias - serão implementadas posteriormente
-class ChatScreen extends StatelessWidget {
-  const ChatScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('Chat', style: TextStyle(fontSize: 24, color: Colors.grey)),
-          Text('Em breve...', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-}
 
 class RequestNFScreen extends StatelessWidget {
   const RequestNFScreen({super.key});
@@ -147,43 +132,7 @@ class RequestNFScreen extends StatelessWidget {
   }
 }
 
-class ReportsScreen extends StatelessWidget {
-  const ReportsScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.folder_outlined, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('Relatórios', style: TextStyle(fontSize: 24, color: Colors.grey)),
-          Text('Em breve...', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-}
-
-class FinancialScreen extends StatelessWidget {
-  const FinancialScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.account_balance_wallet_outlined, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('Financeiro', style: TextStyle(fontSize: 24, color: Colors.grey)),
-          Text('Em breve...', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-}
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
