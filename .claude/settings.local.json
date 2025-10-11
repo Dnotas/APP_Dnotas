@@ -27,7 +27,13 @@
       "Bash(npx ts-node:*)",
       "Bash(npm run preview:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:mcp.supabase.com)",
+      "Bash(claude mcp add:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

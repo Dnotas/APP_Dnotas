@@ -105,26 +105,7 @@
                   </div>
                 </div>
                 
-                <div>
-                  <label for="filial" class="block text-sm font-medium text-gray-300 mb-2">
-                    Filial
-                  </label>
-                  <select
-                    id="filial"
-                    v-model="filialId"
-                    required
-                    class="input-field"
-                  >
-                    <option value="">Selecione a filial</option>
-                    <option 
-                      v-for="filial in filiais" 
-                      :key="filial.id" 
-                      :value="filial.id"
-                    >
-                      {{ filial.tipo === 'matriz' ? '🏢' : '🏪' }} {{ filial.nome }}
-                    </option>
-                  </select>
-                </div>
+                <!-- Filial removida - login automático detecta a organização -->
               </div>
 
               <div v-if="authStore.error" class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -156,12 +137,7 @@
                 </span>
               </button>
 
-              <router-link
-                to="/register"
-                class="w-full btn-secondary text-center block"
-              >
-                + Cadastrar Novo Funcionário
-              </router-link>
+              <!-- Cadastro removido - apenas login disponível -->
             </form>
 
           </div>
@@ -182,21 +158,12 @@ const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const filialId = ref('')
-const filiais = ref<Array<{id: string, nome: string}>>([])
-
-// Carregar filiais ao montar o componente
-onMounted(async () => {
-  const response = await funcionariosService.getFiliais()
-  if (response.success) {
-    filiais.value = response.filiais
-  }
-})
 
 const handleLogin = async () => {
   authStore.clearError()
   
-  const success = await authStore.login(email.value, password.value, filialId.value)
+  // Login simplificado - sem seleção de filial
+  const success = await authStore.login(email.value, password.value)
   
   if (success) {
     router.push('/dashboard')

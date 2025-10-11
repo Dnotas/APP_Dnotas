@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User } from '@/types'
 import { apiService } from '@/services/api'
-import { funcionariosService, type Funcionario } from '@/services/funcionarios'
+import { organizacoesService, type Funcionario } from '@/services/organizacoes'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<Funcionario | null>(null)
@@ -23,20 +23,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const login = async (email: string, password: string, filialId?: string) => {
+  const login = async (email: string, password: string) => {
     try {
       isLoading.value = true
       error.value = null
       
-      const response = await funcionariosService.login(email, password)
+      console.log('AuthStore: Tentando login com:', email)
+      const response = await organizacoesService.login(email, password)
+      console.log('AuthStore: Resposta do login:', response)
       
       if (response.success && response.funcionario) {
-        // Verificar se filial selecionada corresponde à filial do funcionário
-        if (filialId && response.funcionario.filial_id !== filialId) {
-          error.value = 'Funcionário não pertence à filial selecionada'
-          return false
-        }
-        
         user.value = response.funcionario
         token.value = 'func_token_' + Date.now()
         
@@ -45,14 +41,16 @@ export const useAuthStore = defineStore('auth', () => {
         
         apiService.setAuthToken(token.value)
         
+        console.log('AuthStore: Login realizado com sucesso:', response.funcionario)
         return true
       } else {
         error.value = response.error || 'Erro ao fazer login'
+        console.error('AuthStore: Erro no login:', response.error)
         return false
       }
     } catch (err) {
       error.value = 'Erro de conexão'
-      console.error('Login error:', err)
+      console.error('AuthStore: Erro de conexão:', err)
       return false
     } finally {
       isLoading.value = false
