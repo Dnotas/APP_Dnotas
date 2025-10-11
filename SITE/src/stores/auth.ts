@@ -27,20 +27,83 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       error.value = null
       
-      const response = await apiService.login(email, password, filialId)
+      // Simulação de login para funcionários (para demonstração)
+      const funcionarios = [
+        {
+          email: 'admin@dnotas.com',
+          password: 'admin123',
+          filial: 'matriz',
+          user: {
+            id: '1',
+            nome: 'Administrador',
+            email: 'admin@dnotas.com',
+            filial_id: 'matriz',
+            filial_nome: 'Matriz',
+            role: 'admin'
+          }
+        },
+        {
+          email: 'gestor@dnotas.com', 
+          password: 'gestor123',
+          filial: 'matriz',
+          user: {
+            id: '2',
+            nome: 'Gestor Matriz',
+            email: 'gestor@dnotas.com',
+            filial_id: 'matriz',
+            filial_nome: 'Matriz',
+            role: 'manager'
+          }
+        },
+        {
+          email: 'filial1@dnotas.com',
+          password: 'filial123',
+          filial: 'filial_1',
+          user: {
+            id: '3',
+            nome: 'Operador Filial 1',
+            email: 'filial1@dnotas.com',
+            filial_id: 'filial_1',
+            filial_nome: 'Filial 1',
+            role: 'operator'
+          }
+        },
+        {
+          email: 'filial2@dnotas.com',
+          password: 'filial123', 
+          filial: 'filial_2',
+          user: {
+            id: '4',
+            nome: 'Operador Filial 2',
+            email: 'filial2@dnotas.com',
+            filial_id: 'filial_2',
+            filial_nome: 'Filial 2',
+            role: 'operator'
+          }
+        }
+      ]
       
-      if (response.success) {
-        user.value = response.data.user
-        token.value = response.data.token
+      // Simular delay de rede
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const funcionario = funcionarios.find(f => 
+        f.email === email && 
+        f.password === password && 
+        f.filial === filialId
+      )
+      
+      if (funcionario) {
+        user.value = funcionario.user
+        token.value = 'demo_token_' + Date.now()
         
-        localStorage.setItem('auth_token', response.data.token)
-        localStorage.setItem('auth_user', JSON.stringify(response.data.user))
+        localStorage.setItem('auth_token', token.value)
+        localStorage.setItem('auth_user', JSON.stringify(funcionario.user))
         
-        apiService.setAuthToken(response.data.token)
+        apiService.setAuthToken(token.value)
         
         return true
       } else {
-        error.value = response.message || 'Erro ao fazer login'
+        error.value = 'Email, senha ou filial incorretos'
         return false
       }
     } catch (err) {
