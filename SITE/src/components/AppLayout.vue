@@ -46,8 +46,8 @@
               </div>
             </div>
             <div class="ml-3 flex-1">
-              <p class="text-sm font-medium text-white">{{ authStore.user?.name }}</p>
-              <p class="text-xs text-gray-400 capitalize">{{ authStore.user?.filial_id }}</p>
+              <p class="text-sm font-medium text-white">{{ authStore.user?.nome || 'Usuário' }}</p>
+              <p class="text-xs text-gray-400 capitalize">{{ authStore.user?.organizacao_nome || 'DNOTAS' }}</p>
             </div>
             <button
               @click="handleLogout"
@@ -138,7 +138,10 @@ import {
   ChatIcon,
   UsersIcon,
   DocumentReportIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  OfficeBuildingIcon,
+  UserGroupIcon,
+  CogIcon
 } from '@heroicons/vue/outline'
 
 const router = useRouter()
@@ -149,23 +152,49 @@ const profileMenuOpen = ref(false)
 const searchQuery = ref('')
 const unreadNotifications = ref(5)
 
-const navigation = [
-  { name: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { 
-    name: 'chat', 
-    label: 'Atendimento', 
-    href: '/chat', 
-    icon: ChatIcon,
-    badge: 3,
-    badgeClass: 'bg-red-100 text-red-800'
-  },
-  { name: 'clients', label: 'Clientes', href: '/clients', icon: UsersIcon },
-  { name: 'reports', label: 'Relatórios', href: '/reports', icon: DocumentReportIcon },
-  { name: 'financial', label: 'Financeiro', href: '/financial', icon: CurrencyDollarIcon }
-]
+const navigation = computed(() => {
+  const user = authStore.user
+  const isMatrizAdmin = user?.organizacao_tipo === 'matriz' && user?.role === 'admin'
+
+  if (isMatrizAdmin) {
+    // Menu para administrador da matriz
+    return [
+      { name: 'admin-dashboard', label: 'Dashboard Admin', href: '/admin/dashboard', icon: HomeIcon },
+      { name: 'admin-filiais', label: 'Gestão de Filiais', href: '/admin/filiais', icon: OfficeBuildingIcon },
+      { name: 'admin-funcionarios', label: 'Funcionários', href: '/admin/funcionarios', icon: UserGroupIcon },
+      { name: 'clients', label: 'Clientes', href: '/clients', icon: UsersIcon },
+      { name: 'reports', label: 'Relatórios', href: '/reports', icon: DocumentReportIcon },
+      { name: 'financial', label: 'Financeiro', href: '/financial', icon: CurrencyDollarIcon },
+      { 
+        name: 'chat', 
+        label: 'Atendimento', 
+        href: '/chat', 
+        icon: ChatIcon,
+        badge: 3,
+        badgeClass: 'bg-red-100 text-red-800'
+      }
+    ]
+  } else {
+    // Menu padrão para funcionários das filiais
+    return [
+      { name: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+      { 
+        name: 'chat', 
+        label: 'Atendimento', 
+        href: '/chat', 
+        icon: ChatIcon,
+        badge: 3,
+        badgeClass: 'bg-red-100 text-red-800'
+      },
+      { name: 'clients', label: 'Clientes', href: '/clients', icon: UsersIcon },
+      { name: 'reports', label: 'Relatórios', href: '/reports', icon: DocumentReportIcon },
+      { name: 'financial', label: 'Financeiro', href: '/financial', icon: CurrencyDollarIcon }
+    ]
+  }
+})
 
 const userInitials = computed(() => {
-  const name = authStore.user?.name || 'Admin'
+  const name = authStore.user?.nome || 'Admin'
   return name.split(' ').map(n => n[0]).join('').toUpperCase()
 })
 
