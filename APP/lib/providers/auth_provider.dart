@@ -43,18 +43,7 @@ class AuthProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      // Primeiro tenta com API real
-      final apiResponse = await ApiService.login(cnpj, password);
-      
-      if (apiResponse != null && apiResponse['success'] == true) {
-        _authToken = apiResponse['data']['token'];
-        _currentUser = UserModel.fromJson(apiResponse['data']['user']);
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      }
-      
-      // Fallback para Supabase se API falhar
+      // Login direto com Supabase
       final response = await SupabaseService.signInWithCnpjAndPassword(
         cnpj: cnpj,
         password: password,
