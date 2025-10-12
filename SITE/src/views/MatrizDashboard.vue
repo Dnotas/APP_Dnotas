@@ -258,6 +258,129 @@
           </div>
         </div>
 
+        <!-- Modal Novo Funcionário -->
+        <div v-if="showNovoFuncionario" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800">
+            <h3 class="text-xl font-bold text-white mb-4">Novo Funcionário</h3>
+            
+            <form @submit.prevent="salvarFuncionario">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Nome Completo</label>
+                  <input v-model="novoFuncionario.nome" type="text" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Email</label>
+                  <input v-model="novoFuncionario.email" type="email" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Cargo</label>
+                  <input v-model="novoFuncionario.cargo" type="text" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Telefone</label>
+                  <input v-model="novoFuncionario.telefone" type="text" 
+                         placeholder="(11) 99999-9999"
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Filial</label>
+                  <select v-model="novoFuncionario.filial_id" required 
+                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                    <option value="">Selecione uma filial</option>
+                    <option value="matriz-id">Matriz</option>
+                    <option v-for="filial in filiais" :key="filial.id" :value="filial.id">
+                      {{ filial.nome }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" @click="showNovoFuncionario = false" 
+                        class="px-4 py-2 text-gray-400 hover:text-white transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" :disabled="salvandoFuncionario"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+                  {{ salvandoFuncionario ? 'Salvando...' : 'Salvar' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal Nova Filial -->
+        <div v-if="showNovaFilial" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800">
+            <h3 class="text-xl font-bold text-white mb-4">Nova Filial</h3>
+            
+            <form @submit.prevent="salvarFilial">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Nome da Filial</label>
+                  <input v-model="novaFilial.nome" type="text" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Código</label>
+                  <input v-model="novaFilial.codigo" type="text" required
+                         placeholder="FIL001"
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Cidade</label>
+                  <input v-model="novaFilial.cidade" type="text" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Estado</label>
+                  <select v-model="novaFilial.estado" required 
+                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                    <option value="">Selecione o estado</option>
+                    <option value="SP">São Paulo</option>
+                    <option value="RJ">Rio de Janeiro</option>
+                    <option value="MG">Minas Gerais</option>
+                    <option value="RS">Rio Grande do Sul</option>
+                    <option value="PR">Paraná</option>
+                    <option value="SC">Santa Catarina</option>
+                    <option value="BA">Bahia</option>
+                    <option value="GO">Goiás</option>
+                    <option value="DF">Distrito Federal</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Endereço</label>
+                  <input v-model="novaFilial.endereco" type="text" 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+              </div>
+              
+              <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" @click="showNovaFilial = false" 
+                        class="px-4 py-2 text-gray-400 hover:text-white transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" :disabled="salvandoFilial"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+                  {{ salvandoFilial ? 'Salvando...' : 'Salvar' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <!-- Chat Tab -->
         <div v-if="activeTab === 'chat'">
           <h2 class="text-2xl font-bold text-white mb-6">Centro de Mensagens</h2>
@@ -284,17 +407,115 @@
 
         <!-- Funcionários Tab -->
         <div v-if="activeTab === 'funcionarios'">
-          <h2 class="text-2xl font-bold text-white mb-6">Gestão de Funcionários</h2>
-          <div class="bg-gray-900/50 rounded-xl border border-gray-800 p-6">
-            <p class="text-gray-400">Sistema de funcionários será implementado aqui.</p>
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-white">Gestão de Funcionários</h2>
+            <button @click="showNovoFuncionario = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              + Novo Funcionário
+            </button>
+          </div>
+          
+          <!-- Lista de Funcionários -->
+          <div class="bg-gray-900/50 rounded-xl border border-gray-800">
+            <div v-if="isLoadingFuncionarios" class="p-6 text-center">
+              <p class="text-gray-400">Carregando funcionários...</p>
+            </div>
+            
+            <div v-else-if="funcionarios.length === 0" class="p-6 text-center">
+              <p class="text-gray-400">Nenhum funcionário cadastrado ainda.</p>
+            </div>
+            
+            <div v-else class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="border-b border-gray-800">
+                  <tr>
+                    <th class="text-left p-4 text-gray-400 font-medium">Nome</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Email</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Cargo</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Filial</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Status</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="funcionario in funcionarios" :key="funcionario.id" class="border-b border-gray-800 hover:bg-gray-800/30">
+                    <td class="p-4 text-white">{{ funcionario.nome }}</td>
+                    <td class="p-4 text-gray-300">{{ funcionario.email }}</td>
+                    <td class="p-4 text-gray-300">{{ funcionario.cargo }}</td>
+                    <td class="p-4 text-gray-300">{{ funcionario.filial_id }}</td>
+                    <td class="p-4">
+                      <span :class="funcionario.is_active ? 'text-green-400' : 'text-red-400'">
+                        {{ funcionario.is_active ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td class="p-4">
+                      <button @click="editarFuncionario(funcionario)" class="text-blue-400 hover:text-blue-300 mr-3">
+                        Editar
+                      </button>
+                      <button @click="removerFuncionario(funcionario.id)" class="text-red-400 hover:text-red-300">
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         <!-- Filiais Tab -->
         <div v-if="activeTab === 'filiais'">
-          <h2 class="text-2xl font-bold text-white mb-6">Gestão de Filiais</h2>
-          <div class="bg-gray-900/50 rounded-xl border border-gray-800 p-6">
-            <p class="text-gray-400">Sistema de filiais será implementado aqui.</p>
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-white">Gestão de Filiais</h2>
+            <button @click="showNovaFilial = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+              + Nova Filial
+            </button>
+          </div>
+          
+          <!-- Lista de Filiais -->
+          <div class="bg-gray-900/50 rounded-xl border border-gray-800">
+            <div v-if="isLoadingFiliais" class="p-6 text-center">
+              <p class="text-gray-400">Carregando filiais...</p>
+            </div>
+            
+            <div v-else-if="filiais.length === 0" class="p-6 text-center">
+              <p class="text-gray-400">Nenhuma filial cadastrada ainda.</p>
+            </div>
+            
+            <div v-else class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="border-b border-gray-800">
+                  <tr>
+                    <th class="text-left p-4 text-gray-400 font-medium">Nome</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Código</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Cidade</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Estado</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Status</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="filial in filiais" :key="filial.id" class="border-b border-gray-800 hover:bg-gray-800/30">
+                    <td class="p-4 text-white">{{ filial.nome }}</td>
+                    <td class="p-4 text-gray-300">{{ filial.codigo }}</td>
+                    <td class="p-4 text-gray-300">{{ filial.cidade }}</td>
+                    <td class="p-4 text-gray-300">{{ filial.estado }}</td>
+                    <td class="p-4">
+                      <span :class="filial.is_active ? 'text-green-400' : 'text-red-400'">
+                        {{ filial.is_active ? 'Ativa' : 'Inativa' }}
+                      </span>
+                    </td>
+                    <td class="p-4">
+                      <button @click="editarFilial(filial)" class="text-blue-400 hover:text-blue-300 mr-3">
+                        Editar
+                      </button>
+                      <button @click="removerFilial(filial.id)" class="text-red-400 hover:text-red-300">
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </main>
@@ -326,11 +547,37 @@ const isLoading = ref(false)
 const showNovoCliente = ref(false)
 const salvandoCliente = ref(false)
 
+const funcionarios = ref([])
+const isLoadingFuncionarios = ref(false)
+const showNovoFuncionario = ref(false)
+const salvandoFuncionario = ref(false)
+
+const filiais = ref([])
+const isLoadingFiliais = ref(false)
+const showNovaFilial = ref(false)
+const salvandoFilial = ref(false)
+
 const novoCliente = ref({
   nome: '',
   email: '',
   telefone: '',
   cnpj: ''
+})
+
+const novoFuncionario = ref({
+  nome: '',
+  email: '',
+  cargo: '',
+  telefone: '',
+  filial_id: ''
+})
+
+const novaFilial = ref({
+  nome: '',
+  codigo: '',
+  cidade: '',
+  estado: '',
+  endereco: ''
 })
 
 // Carregar estatísticas reais
@@ -448,8 +695,180 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('pt-BR')
 }
 
+// Carregar funcionários
+const carregarFuncionarios = async () => {
+  try {
+    isLoadingFuncionarios.value = true
+    const { data, error } = await supabase
+      .from('funcionarios')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    
+    funcionarios.value = data || []
+    console.log('Funcionários carregados:', funcionarios.value)
+  } catch (error) {
+    console.error('Erro ao carregar funcionários:', error)
+  } finally {
+    isLoadingFuncionarios.value = false
+  }
+}
+
+// Carregar filiais
+const carregarFiliais = async () => {
+  try {
+    isLoadingFiliais.value = true
+    const { data, error } = await supabase
+      .from('filiais')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    
+    filiais.value = data || []
+    console.log('Filiais carregadas:', filiais.value)
+  } catch (error) {
+    console.error('Erro ao carregar filiais:', error)
+  } finally {
+    isLoadingFiliais.value = false
+  }
+}
+
+// Salvar funcionário
+const salvarFuncionario = async () => {
+  try {
+    salvandoFuncionario.value = true
+    
+    // Gerar senha temporária
+    const senhaTemporaria = Math.random().toString(36).slice(-8)
+    
+    const { data, error } = await supabase
+      .from('funcionarios')
+      .insert([{
+        nome: novoFuncionario.value.nome,
+        email: novoFuncionario.value.email,
+        cargo: novoFuncionario.value.cargo,
+        telefone: novoFuncionario.value.telefone,
+        filial_id: novoFuncionario.value.filial_id,
+        senha: senhaTemporaria,
+        is_active: true
+      }])
+      .select()
+    
+    if (error) throw error
+    
+    alert(`Funcionário cadastrado com sucesso!\\nSenha temporária: ${senhaTemporaria}`)
+    
+    // Limpar formulário e fechar modal
+    novoFuncionario.value = { nome: '', email: '', cargo: '', telefone: '', filial_id: '' }
+    showNovoFuncionario.value = false
+    
+    // Recarregar lista
+    await carregarFuncionarios()
+    
+    console.log('Funcionário salvo:', data)
+  } catch (error) {
+    console.error('Erro ao salvar funcionário:', error)
+    alert('Erro ao salvar funcionário: ' + error.message)
+  } finally {
+    salvandoFuncionario.value = false
+  }
+}
+
+// Salvar filial
+const salvarFilial = async () => {
+  try {
+    salvandoFilial.value = true
+    
+    const { data, error } = await supabase
+      .from('filiais')
+      .insert([{
+        nome: novaFilial.value.nome,
+        codigo: novaFilial.value.codigo,
+        cidade: novaFilial.value.cidade,
+        estado: novaFilial.value.estado,
+        endereco: novaFilial.value.endereco,
+        is_active: true
+      }])
+      .select()
+    
+    if (error) throw error
+    
+    alert('Filial cadastrada com sucesso!')
+    
+    // Limpar formulário e fechar modal
+    novaFilial.value = { nome: '', codigo: '', cidade: '', estado: '', endereco: '' }
+    showNovaFilial.value = false
+    
+    // Recarregar lista
+    await carregarFiliais()
+    
+    console.log('Filial salva:', data)
+  } catch (error) {
+    console.error('Erro ao salvar filial:', error)
+    alert('Erro ao salvar filial: ' + error.message)
+  } finally {
+    salvandoFilial.value = false
+  }
+}
+
+// Remover funcionário
+const removerFuncionario = async (id) => {
+  if (!confirm('Tem certeza que deseja remover este funcionário?')) return
+  
+  try {
+    const { error } = await supabase
+      .from('funcionarios')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+    
+    await carregarFuncionarios()
+    console.log('Funcionário removido')
+  } catch (error) {
+    console.error('Erro ao remover funcionário:', error)
+    alert('Erro ao remover funcionário: ' + error.message)
+  }
+}
+
+// Remover filial
+const removerFilial = async (id) => {
+  if (!confirm('Tem certeza que deseja remover esta filial?')) return
+  
+  try {
+    const { error } = await supabase
+      .from('filiais')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+    
+    await carregarFiliais()
+    console.log('Filial removida')
+  } catch (error) {
+    console.error('Erro ao remover filial:', error)
+    alert('Erro ao remover filial: ' + error.message)
+  }
+}
+
+// Editar funcionário (placeholder)
+const editarFuncionario = (funcionario) => {
+  console.log('Editar funcionário:', funcionario)
+  // TODO: implementar modal de edição
+}
+
+// Editar filial (placeholder)
+const editarFilial = (filial) => {
+  console.log('Editar filial:', filial)
+  // TODO: implementar modal de edição
+}
+
 onMounted(() => {
   carregarEstatisticas()
   carregarClientes()
+  carregarFuncionarios()
+  carregarFiliais()
 })
 </script>
