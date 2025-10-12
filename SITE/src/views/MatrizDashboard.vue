@@ -13,7 +13,10 @@
           </div>
         </div>
         <div class="flex items-center space-x-4">
-          <span class="text-green-400 text-sm">● Online</span>
+          <div class="flex items-center space-x-2">
+            <span :class="statusConexao.cor" class="text-sm">● {{ statusConexao.texto }}</span>
+            <div v-if="statusConexao.loading" class="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          </div>
         </div>
       </div>
     </header>
@@ -185,7 +188,7 @@
                 <tbody>
                   <tr v-for="cliente in clientes" :key="cliente.id" class="border-b border-gray-800 hover:bg-gray-800/30">
                     <td class="p-4 text-white">{{ cliente.nome_empresa }}</td>
-                    <td class="p-4 text-gray-300">{{ cliente.cnpj }}</td>
+                    <td class="p-4 text-gray-300">{{ formatarCNPJExibicao(cliente.cnpj) }}</td>
                     <td class="p-4 text-gray-300">{{ formatDate(cliente.created_at) }}</td>
                     <td class="p-4">
                       <button @click="editarCliente(cliente)" class="text-blue-400 hover:text-blue-300 mr-3">
@@ -217,8 +220,12 @@
                 
                 <div>
                   <label class="block text-gray-400 text-sm mb-2">CNPJ</label>
-                  <input v-model="novoCliente.cnpj" type="text" required
+                  <input v-model="novoCliente.cnpj" 
+                         type="text" 
+                         required
                          placeholder="00.000.000/0000-00"
+                         maxlength="18"
+                         @input="formatarCNPJ"
                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
                 </div>
                 
@@ -322,35 +329,6 @@
                          placeholder="FIL001"
                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
                 </div>
-                
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">Cidade</label>
-                  <input v-model="novaFilial.cidade" type="text" required 
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-                </div>
-                
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">Estado</label>
-                  <select v-model="novaFilial.estado" required 
-                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-                    <option value="">Selecione o estado</option>
-                    <option value="SP">São Paulo</option>
-                    <option value="RJ">Rio de Janeiro</option>
-                    <option value="MG">Minas Gerais</option>
-                    <option value="RS">Rio Grande do Sul</option>
-                    <option value="PR">Paraná</option>
-                    <option value="SC">Santa Catarina</option>
-                    <option value="BA">Bahia</option>
-                    <option value="GO">Goiás</option>
-                    <option value="DF">Distrito Federal</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">Endereço</label>
-                  <input v-model="novaFilial.endereco" type="text" 
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-                </div>
               </div>
               
               <div class="flex justify-end space-x-3 mt-6">
@@ -427,10 +405,10 @@
                     <td class="p-4 text-white">{{ funcionario.nome }}</td>
                     <td class="p-4 text-gray-300">{{ funcionario.email }}</td>
                     <td class="p-4 text-gray-300">{{ funcionario.cargo }}</td>
-                    <td class="p-4 text-gray-300">{{ funcionario.filial_id }}</td>
+                    <td class="p-4 text-gray-300">{{ funcionario.organizacao_id }}</td>
                     <td class="p-4">
-                      <span :class="funcionario.is_active ? 'text-green-400' : 'text-red-400'">
-                        {{ funcionario.is_active ? 'Ativo' : 'Inativo' }}
+                      <span :class="funcionario.ativo ? 'text-green-400' : 'text-red-400'">
+                        {{ funcionario.ativo ? 'Ativo' : 'Inativo' }}
                       </span>
                     </td>
                     <td class="p-4">
@@ -473,8 +451,6 @@
                   <tr>
                     <th class="text-left p-4 text-gray-400 font-medium">Nome</th>
                     <th class="text-left p-4 text-gray-400 font-medium">Código</th>
-                    <th class="text-left p-4 text-gray-400 font-medium">Cidade</th>
-                    <th class="text-left p-4 text-gray-400 font-medium">Estado</th>
                     <th class="text-left p-4 text-gray-400 font-medium">Status</th>
                     <th class="text-left p-4 text-gray-400 font-medium">Ações</th>
                   </tr>
@@ -483,11 +459,9 @@
                   <tr v-for="filial in filiais" :key="filial.id" class="border-b border-gray-800 hover:bg-gray-800/30">
                     <td class="p-4 text-white">{{ filial.nome }}</td>
                     <td class="p-4 text-gray-300">{{ filial.codigo }}</td>
-                    <td class="p-4 text-gray-300">{{ filial.cidade }}</td>
-                    <td class="p-4 text-gray-300">{{ filial.estado }}</td>
                     <td class="p-4">
-                      <span :class="filial.is_active ? 'text-green-400' : 'text-red-400'">
-                        {{ filial.is_active ? 'Ativa' : 'Inativa' }}
+                      <span :class="filial.ativo ? 'text-green-400' : 'text-red-400'">
+                        {{ filial.ativo ? 'Ativa' : 'Inativa' }}
                       </span>
                     </td>
                     <td class="p-4">
@@ -511,14 +485,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { createClient } from '@supabase/supabase-js'
+import { supabase, testarConexao } from '../services/supabase.js'
 
 const activeTab = ref('dashboard')
 
-// Configuração Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cqqeylhspmpilzgmqfiu.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcWV5bGhzcG1waWx6Z21xZml1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxODE1NywiZXhwIjoyMDc1MDk0MTU3fQ.w6ib6zMKcz7G-HBjYQBp6eOWLo7gLl5VNz9F9WVGaoc'
-const supabase = createClient(supabaseUrl, supabaseKey)
+// Status da conexão com Supabase
+const statusConexao = ref({
+  texto: 'Conectando...',
+  cor: 'text-yellow-400',
+  loading: true
+})
 
 // Dados reais do banco
 const stats = ref({
@@ -559,10 +535,7 @@ const novoFuncionario = ref({
 
 const novaFilial = ref({
   nome: '',
-  codigo: '',
-  cidade: '',
-  estado: '',
-  endereco: ''
+  codigo: ''
 })
 
 // Carregar estatísticas reais
@@ -607,13 +580,25 @@ const salvarCliente = async () => {
   try {
     salvandoCliente.value = true
     
+    // Remover formatação do CNPJ antes de salvar (manter apenas números)
+    const cnpjLimpo = novoCliente.value.cnpj.replace(/\D/g, '')
+    
+    // Validar CNPJ (deve ter 14 dígitos)
+    if (cnpjLimpo.length !== 14) {
+      alert('CNPJ deve ter exatamente 14 dígitos!')
+      return
+    }
+    
+    console.log('CNPJ formatado:', novoCliente.value.cnpj)
+    console.log('CNPJ limpo para salvar:', cnpjLimpo)
+    
     const { data, error } = await supabase
       .from('clientes')
       .insert([{
-        cnpj: novoCliente.value.cnpj,
+        cnpj: cnpjLimpo, // Salvar só números
         nome_empresa: novoCliente.value.nome,
         senha: novoCliente.value.senha,
-        filial_id: 'matriz-id',
+        filial_id: 'matriz-id', // ID que existe na tabela filiais
         is_active: true
       }])
       .select()
@@ -674,6 +659,20 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('pt-BR')
 }
 
+// Formatar CNPJ para exibição
+const formatarCNPJExibicao = (cnpj) => {
+  if (!cnpj) return ''
+  
+  // Remove qualquer formatação existente
+  const cnpjLimpo = cnpj.replace(/\D/g, '')
+  
+  // Se não tem 14 dígitos, retorna como está
+  if (cnpjLimpo.length !== 14) return cnpj
+  
+  // Aplica a formatação XX.XXX.XXX/XXXX-XX
+  return cnpjLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+}
+
 // Carregar funcionários
 const carregarFuncionarios = async () => {
   try {
@@ -729,9 +728,9 @@ const salvarFuncionario = async () => {
         email: novoFuncionario.value.email,
         cargo: novoFuncionario.value.cargo,
         telefone: novoFuncionario.value.telefone,
-        filial_id: novoFuncionario.value.filial_id,
+        organizacao_id: novoFuncionario.value.filial_id, // Usar organizacao_id
         senha: senhaTemporaria,
-        is_active: true
+        ativo: true // Usar ativo ao invés de is_active
       }])
       .select()
     
@@ -765,10 +764,7 @@ const salvarFilial = async () => {
       .insert([{
         nome: novaFilial.value.nome,
         codigo: novaFilial.value.codigo,
-        cidade: novaFilial.value.cidade,
-        estado: novaFilial.value.estado,
-        endereco: novaFilial.value.endereco,
-        is_active: true
+        ativo: true // Usar ativo ao invés de is_active
       }])
       .select()
     
@@ -777,7 +773,7 @@ const salvarFilial = async () => {
     alert('Filial cadastrada com sucesso!')
     
     // Limpar formulário e fechar modal
-    novaFilial.value = { nome: '', codigo: '', cidade: '', estado: '', endereco: '' }
+    novaFilial.value = { nome: '', codigo: '' }
     showNovaFilial.value = false
     
     // Recarregar lista
@@ -844,10 +840,70 @@ const editarFilial = (filial) => {
   // TODO: implementar modal de edição
 }
 
-onMounted(() => {
-  carregarEstatisticas()
-  carregarClientes()
-  carregarFuncionarios()
-  carregarFiliais()
+// Função para formatar CNPJ enquanto digita
+const formatarCNPJ = (event) => {
+  let value = event.target.value.replace(/\D/g, '') // Remove tudo que não é número
+  
+  // Aplica a máscara XX.XXX.XXX/XXXX-XX
+  if (value.length <= 2) {
+    value = value
+  } else if (value.length <= 5) {
+    value = value.replace(/(\d{2})(\d+)/, '$1.$2')
+  } else if (value.length <= 8) {
+    value = value.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3')
+  } else if (value.length <= 12) {
+    value = value.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4')
+  } else {
+    value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5')
+  }
+  
+  // Limita a 14 dígitos (18 caracteres com formatação)
+  if (value.replace(/\D/g, '').length > 14) {
+    value = value.substring(0, 18)
+  }
+  
+  novoCliente.value.cnpj = value
+  event.target.value = value
+}
+
+onMounted(async () => {
+  // Testar conexão primeiro
+  statusConexao.value = {
+    texto: 'Conectando...',
+    cor: 'text-yellow-400',
+    loading: true
+  }
+  
+  try {
+    const conexaoOK = await testarConexao()
+    console.log('Status da conexão:', conexaoOK)
+    
+    if (conexaoOK) {
+      statusConexao.value = {
+        texto: 'Conectado',
+        cor: 'text-green-400',
+        loading: false
+      }
+      
+      // Carregar dados
+      await Promise.all([
+        carregarEstatisticas(),
+        carregarClientes(),
+        carregarFuncionarios(),
+        carregarFiliais()
+      ])
+      
+      console.log('✅ Todas as operações concluídas com sucesso')
+    } else {
+      throw new Error('Conexão falhou')
+    }
+  } catch (error) {
+    console.error('❌ Falha na conexão com Supabase:', error)
+    statusConexao.value = {
+      texto: 'Erro de Conexão',
+      cor: 'text-red-400',
+      loading: false
+    }
+  }
 })
 </script>

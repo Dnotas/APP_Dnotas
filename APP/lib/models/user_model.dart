@@ -2,7 +2,7 @@ class UserModel {
   final String id;
   final String cnpj;
   final String nomeEmpresa;
-  final String email;
+  final String? email;
   final String? telefone;
   final String filialId;
   final DateTime createdAt;
@@ -12,7 +12,7 @@ class UserModel {
     required this.id,
     required this.cnpj,
     required this.nomeEmpresa,
-    required this.email,
+    this.email,
     this.telefone,
     required this.filialId,
     required this.createdAt,

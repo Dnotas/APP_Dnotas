@@ -1,11 +1,18 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
+    // Não inicializar notificações na web
+    if (kIsWeb) {
+      print('Notificações não disponíveis na web');
+      return;
+    }
+
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -154,6 +161,8 @@ class NotificationService {
 
   // Verificar se notificações estão habilitadas
   static Future<bool> areNotificationsEnabled() async {
+    if (kIsWeb) return false; // Web não suporta notificações locais
+    
     if (Platform.isAndroid) {
       final bool? enabled = await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
@@ -166,6 +175,8 @@ class NotificationService {
 
   // Abrir configurações de notificação
   static Future<void> openNotificationSettings() async {
+    if (kIsWeb) return; // Web não suporta
+    
     if (Platform.isAndroid) {
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<

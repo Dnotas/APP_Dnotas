@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 2; // Inicializar com Reports como tela padrão
   
   final List<Widget> _screens = [
     const ChatScreen(),

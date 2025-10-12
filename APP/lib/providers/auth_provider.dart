@@ -50,11 +50,14 @@ class AuthProvider with ChangeNotifier {
       );
 
       if (response != null) {
+        print('Tentando criar UserModel com: $response');
         _currentUser = UserModel.fromJson(response);
+        print('UserModel criado com sucesso: ${_currentUser?.nomeEmpresa}');
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
+        print('Login falhou - response é null');
         _errorMessage = 'CNPJ ou senha inválidos';
         _isLoading = false;
         notifyListeners();

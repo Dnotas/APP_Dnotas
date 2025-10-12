@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
-import '../models/transaction_model.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -13,8 +12,11 @@ class ReportsScreen extends StatefulWidget {
 
 class _ReportsScreenState extends State<ReportsScreen> {
   bool _isLoading = true;
-  List<TransactionModel> _transactions = [];
-  double _totalBalance = 0.0;
+  double _totalVendas = 0.0;
+  double _vendasCredito = 0.0;
+  double _vendasDebito = 0.0;
+  double _vendasPix = 0.0;
+  double _vendasValeAlimentacao = 0.0;
 
   @override
   void initState() {
@@ -29,43 +31,35 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final token = authProvider.token;
       
       if (cnpj != null && token != null) {
-        final data = await ApiService.getClientReports(cnpj, token);
+        // TODO: Implementar API para buscar dados de vendas reais
+        // final data = await ApiService.getClientSales(cnpj, token);
         setState(() {
-          _transactions = data['transactions'] ?? [];
-          _totalBalance = data['balance'] ?? 0.0;
+          _vendasCredito = 15250.30;
+          _vendasDebito = 8975.45;
+          _vendasPix = 12380.90;
+          _vendasValeAlimentacao = 3420.75;
+          _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao;
           _isLoading = false;
         });
       } else {
-        // Fallback com dados de exemplo para apresentação
+        // Dados de exemplo para apresentação
         setState(() {
-          _transactions = [
-            TransactionModel(
-              id: '1',
-              description: 'Vendas do dia',
-              amount: 5956.78,
-              type: 'received',
-              date: DateTime.now(),
-              category: 'Vendas',
-            ),
-          ];
-          _totalBalance = 36400.12;
+          _vendasCredito = 15250.30;
+          _vendasDebito = 8975.45;
+          _vendasPix = 12380.90;
+          _vendasValeAlimentacao = 3420.75;
+          _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao;
           _isLoading = false;
         });
       }
     } catch (e) {
-      // Fallback com dados de exemplo para apresentação
+      // Fallback com dados de exemplo
       setState(() {
-        _transactions = [
-          TransactionModel(
-            id: '1',
-            description: 'Vendas do dia',
-            amount: 5956.78,
-            type: 'received',
-            date: DateTime.now(),
-            category: 'Vendas',
-          ),
-        ];
-        _totalBalance = 36400.12;
+        _vendasCredito = 15250.30;
+        _vendasDebito = 8975.45;
+        _vendasPix = 12380.90;
+        _vendasValeAlimentacao = 3420.75;
+        _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao;
         _isLoading = false;
       });
     }
@@ -108,10 +102,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.credit_card, size: 16),
+                const Icon(Icons.analytics, size: 16),
                 const SizedBox(width: 4),
                 Text(
-                  '0',
+                  'Relatórios',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -131,119 +125,304 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Card principal com logo e saldo
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade800),
-                      ),
-                      child: Column(
-                        children: [
-                          // Logo da empresa
-                          Container(
-                            width: 60,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text(
-                                (user?.nomeEmpresa?.isNotEmpty == true) ? user!.nomeEmpresa!.substring(0, 1).toUpperCase() : 'D',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          
-                          // Saldo
-                          const Text(
-                            'BALANCE',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                'R\$ ${_totalBalance.toStringAsFixed(2).replaceAll('.', ',')}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'BRL',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
+                    // Card principal com design de cartão real
+                    Center(
+                      child: Container(
+                        width: 340,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF1E1E1E),
+                              Color(0xFF2A2A2A),
+                              Color(0xFF1A1A1A),
                             ],
                           ),
-                          const SizedBox(height: 24),
-                          
-                          // Botões de ação
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    // TODO: Implementar receber
-                                  },
-                                  icon: const Icon(Icons.arrow_downward, size: 18),
-                                  label: const Text('Receber'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF3A3A3A),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.1),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                              offset: const Offset(0, 0),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            // Linhas cyberpunk decorativas
+                            Positioned(
+                              top: 20,
+                              left: 20,
+                              right: 80,
+                              child: Container(
+                                height: 1,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.white.withOpacity(0.8),
+                                      Colors.white.withOpacity(0.2),
+                                      Colors.transparent,
+                                    ],
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    // TODO: Implementar enviar
-                                  },
-                                  icon: const Icon(Icons.arrow_upward, size: 18),
-                                  label: const Text('Enviar'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF3A3A3A),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                            ),
+                            Positioned(
+                              bottom: 20,
+                              left: 80,
+                              right: 20,
+                              child: Container(
+                                height: 1,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.white.withOpacity(0.2),
+                                      Colors.white.withOpacity(0.8),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            // Padrão decorativo no fundo
+                            Positioned(
+                              right: -30,
+                              top: -30,
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withOpacity(0.03),
+                                ),
+                              ),
+                            ),
+                            // Conteúdo do cartão
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Logo DNOTAS no topo
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Text(
+                                          'DNOTAS',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 28,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Icon(
+                                          Icons.contactless,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Nome da empresa
+                                  Text(
+                                    user?.nomeEmpresa ?? 'Empresa',
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  
+                                  // Total de Vendas
+                                  const Text(
+                                    'TOTAL DE VENDAS',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 10,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'R\$ ${_totalVendas.toStringAsFixed(2).replaceAll('.', ',')}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        'BRL',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  
+                                  // Número do cartão estilizado
+                                  Text(
+                                    '•••• •••• •••• ${user?.cnpj?.substring(10) ?? '0000'}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      letterSpacing: 2,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
                     
-                    // Refer a friend section
+                    // Cards de vendas por método de pagamento
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.credit_card, color: Colors.blue, size: 20),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Crédito',
+                                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'R\$ ${_vendasCredito.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.payment, color: Colors.green, size: 20),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Débito',
+                                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'R\$ ${_vendasDebito.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.qr_code, color: Colors.purple, size: 20),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'PIX',
+                                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'R\$ ${_vendasPix.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.restaurant, color: Colors.orange, size: 20),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Vale Alim.',
+                                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'R\$ ${_vendasValeAlimentacao.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Resumo mensal
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -253,14 +432,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.people, color: Colors.white, size: 24),
+                          const Icon(Icons.trending_up, color: Colors.green, size: 24),
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Indique um amigo',
+                                  'Resumo do mês',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -268,7 +447,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                   ),
                                 ),
                                 Text(
-                                  'Ganhe pontos para cada amigo que se juntar',
+                                  'Veja o desempenho completo das suas vendas',
                                   style: TextStyle(
                                     color: Colors.grey,
                                     fontSize: 12,
@@ -281,117 +460,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    
-                    // Seção de transações
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'TRANSAÇÕES',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                            letterSpacing: 1.2,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Lista de transações
-                    _transactions.isEmpty
-                        ? Container(
-                            padding: const EdgeInsets.all(32),
-                            child: const Center(
-                              child: Column(
-                                children: [
-                                  Icon(Icons.receipt_long, color: Colors.grey, size: 48),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Nenhuma transação encontrada',
-                                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _transactions.length,
-                            itemBuilder: (context, index) {
-                              final transaction = _transactions[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                child: ListTile(
-                                  leading: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: transaction.type == 'received' 
-                                          ? Colors.green.withOpacity(0.2) 
-                                          : Colors.red.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Icon(
-                                      transaction.type == 'received' 
-                                          ? Icons.arrow_downward 
-                                          : Icons.arrow_upward,
-                                      color: transaction.type == 'received' 
-                                          ? Colors.green 
-                                          : Colors.red,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    transaction.description,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    '${transaction.date.day}/${transaction.date.month}/${transaction.date.year}',
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        '${transaction.type == 'received' ? '+' : '-'} R\$ ${transaction.amount.toStringAsFixed(2).replaceAll('.', ',')}',
-                                        style: TextStyle(
-                                          color: transaction.type == 'received' 
-                                              ? Colors.green 
-                                              : Colors.red,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${transaction.date.hour.toString().padLeft(2, '0')}:${transaction.date.minute.toString().padLeft(2, '0')}',
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
                   ],
                 ),
               ),
             ),
     );
   }
+
 }

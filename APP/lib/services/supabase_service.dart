@@ -27,14 +27,22 @@ class SupabaseService {
     required String password,
   }) async {
     try {
+      // Remover formatação do CNPJ (manter apenas números)
+      final cnpjLimpo = cnpj.replaceAll(RegExp(r'[^0-9]'), '');
+      
+      print('CNPJ original: $cnpj');
+      print('CNPJ limpo para busca: $cnpjLimpo');
+      
       // Buscar cliente na tabela com CNPJ e senha
       final response = await client
           .from('clientes')
           .select('*')
-          .eq('cnpj', cnpj)
+          .eq('cnpj', cnpjLimpo) // Usar CNPJ sem formatação
           .eq('senha', password)
           .eq('is_active', true)
           .maybeSingle();
+      
+      print('Resposta da busca: $response');
       
       if (response != null) {
         _currentUserId = response['id'];
