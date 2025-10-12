@@ -57,7 +57,7 @@ export interface OrganizacaoCreate {
 }
 
 class OrganizacoesService {
-  // Login simplificado - sem necessidade de selecionar filial
+  // Login usando banco de dados Supabase
   async login(email: string, senha: string) {
     try {
       console.log('OrganizacoesService: Tentando login:', email)
@@ -66,7 +66,8 @@ class OrganizacoesService {
         .from('funcionarios')
         .select(`
           id, nome, email, senha, cargo, role, ativo, ultimo_login,
-          organizacao_id
+          organizacao_id,
+          organizacoes(nome, tipo)
         `)
         .eq('email', email)
         .eq('ativo', true)
@@ -83,23 +84,6 @@ class OrganizacoesService {
         return { success: false, error: 'Senha incorreta' }
       }
 
-      // Buscar informações da organização
-      let organizacao_nome = 'Organização não encontrada'
-      let organizacao_tipo = 'desconhecido'
-      
-      if (data.organizacao_id) {
-        const { data: orgData } = await supabase
-          .from('organizacoes')
-          .select('nome, tipo')
-          .eq('id', data.organizacao_id)
-          .single()
-        
-        if (orgData) {
-          organizacao_nome = orgData.nome
-          organizacao_tipo = orgData.tipo
-        }
-      }
-
       // Atualizar último login
       await supabase
         .from('funcionarios')
@@ -110,8 +94,8 @@ class OrganizacoesService {
         success: true,
         funcionario: {
           ...data,
-          organizacao_nome,
-          organizacao_tipo
+          organizacao_nome: data.organizacoes?.nome || 'Organização',
+          organizacao_tipo: data.organizacoes?.tipo || 'matriz'
         }
       }
     } catch (error) {
