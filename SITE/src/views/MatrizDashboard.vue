@@ -157,13 +157,96 @@
         <div v-if="activeTab === 'clientes'">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-white">Gestão de Clientes</h2>
-            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <button @click="showNovoCliente = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
               + Novo Cliente
             </button>
           </div>
           
-          <div class="bg-gray-900/50 rounded-xl border border-gray-800 p-6">
-            <p class="text-gray-400">Sistema de cadastro de clientes será implementado aqui.</p>
+          <!-- Lista de Clientes -->
+          <div class="bg-gray-900/50 rounded-xl border border-gray-800">
+            <div v-if="isLoading" class="p-6 text-center">
+              <p class="text-gray-400">Carregando clientes...</p>
+            </div>
+            
+            <div v-else-if="clientes.length === 0" class="p-6 text-center">
+              <p class="text-gray-400">Nenhum cliente cadastrado ainda.</p>
+            </div>
+            
+            <div v-else class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="border-b border-gray-800">
+                  <tr>
+                    <th class="text-left p-4 text-gray-400 font-medium">Nome</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Email</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Telefone</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Cadastrado</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="cliente in clientes" :key="cliente.id" class="border-b border-gray-800 hover:bg-gray-800/30">
+                    <td class="p-4 text-white">{{ cliente.nome }}</td>
+                    <td class="p-4 text-gray-300">{{ cliente.email }}</td>
+                    <td class="p-4 text-gray-300">{{ cliente.telefone || '-' }}</td>
+                    <td class="p-4 text-gray-300">{{ formatDate(cliente.created_at) }}</td>
+                    <td class="p-4">
+                      <button @click="editarCliente(cliente)" class="text-blue-400 hover:text-blue-300 mr-3">
+                        Editar
+                      </button>
+                      <button @click="removerCliente(cliente.id)" class="text-red-400 hover:text-red-300">
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Novo Cliente -->
+        <div v-if="showNovoCliente" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800">
+            <h3 class="text-xl font-bold text-white mb-4">Novo Cliente</h3>
+            
+            <form @submit.prevent="salvarCliente">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Nome</label>
+                  <input v-model="novoCliente.nome" type="text" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Email</label>
+                  <input v-model="novoCliente.email" type="email" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">Telefone</label>
+                  <input v-model="novoCliente.telefone" type="text" 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">CNPJ</label>
+                  <input v-model="novoCliente.cnpj" type="text" 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+              </div>
+              
+              <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" @click="showNovoCliente = false" 
+                        class="px-4 py-2 text-gray-400 hover:text-white transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" :disabled="salvandoCliente"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+                  {{ salvandoCliente ? 'Salvando...' : 'Salvar' }}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -212,14 +295,146 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { createClient } from '@supabase/supabase-js'
 
 const activeTab = ref('dashboard')
 
+// Configuração Supabase
+const supabaseUrl = 'https://cqqeylhspmpilzgmqfiu.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcWV5bGhzcG1waWx6Z21xZml1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTgxNTcsImV4cCI6MjA3NTA5NDE1N30.SDLuKQmwJu8gXEJX8CNMV5XVVFPnWNxklcfyOqnVtgw'
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Dados reais do banco
 const stats = ref({
-  totalClientes: 248,
-  nfesMes: 1205,
-  receitaMensal: 45230,
-  mensagensHoje: 67
+  totalClientes: 0,
+  nfesMes: 0,
+  receitaMensal: 0,
+  mensagensHoje: 0
+})
+
+const clientes = ref([])
+const isLoading = ref(false)
+const showNovoCliente = ref(false)
+const salvandoCliente = ref(false)
+
+const novoCliente = ref({
+  nome: '',
+  email: '',
+  telefone: '',
+  cnpj: ''
+})
+
+// Carregar estatísticas reais
+const carregarEstatisticas = async () => {
+  try {
+    isLoading.value = true
+    
+    // Contar clientes reais da tabela organizacoes
+    const { count: clientesCount } = await supabase
+      .from('organizacoes')
+      .select('*', { count: 'exact', head: true })
+    
+    stats.value.totalClientes = clientesCount || 0
+    
+    console.log('Estatísticas carregadas:', stats.value)
+  } catch (error) {
+    console.error('Erro ao carregar estatísticas:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Carregar lista de clientes reais
+const carregarClientes = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('organizacoes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    
+    clientes.value = data || []
+    console.log('Clientes carregados:', clientes.value)
+  } catch (error) {
+    console.error('Erro ao carregar clientes:', error)
+  }
+}
+
+// Salvar novo cliente
+const salvarCliente = async () => {
+  try {
+    salvandoCliente.value = true
+    
+    const { data, error } = await supabase
+      .from('organizacoes')
+      .insert([{
+        nome: novoCliente.value.nome,
+        email: novoCliente.value.email,
+        telefone: novoCliente.value.telefone,
+        cnpj: novoCliente.value.cnpj,
+        tipo: 'cliente',
+        ativo: true
+      }])
+      .select()
+    
+    if (error) throw error
+    
+    // Limpar formulário e fechar modal
+    novoCliente.value = { nome: '', email: '', telefone: '', cnpj: '' }
+    showNovoCliente.value = false
+    
+    // Recarregar listas
+    await carregarClientes()
+    await carregarEstatisticas()
+    
+    console.log('Cliente salvo:', data)
+  } catch (error) {
+    console.error('Erro ao salvar cliente:', error)
+    alert('Erro ao salvar cliente: ' + error.message)
+  } finally {
+    salvandoCliente.value = false
+  }
+}
+
+// Remover cliente
+const removerCliente = async (id) => {
+  if (!confirm('Tem certeza que deseja remover este cliente?')) return
+  
+  try {
+    const { error } = await supabase
+      .from('organizacoes')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+    
+    // Recarregar listas
+    await carregarClientes()
+    await carregarEstatisticas()
+    
+    console.log('Cliente removido')
+  } catch (error) {
+    console.error('Erro ao remover cliente:', error)
+    alert('Erro ao remover cliente: ' + error.message)
+  }
+}
+
+// Editar cliente (placeholder)
+const editarCliente = (cliente) => {
+  console.log('Editar cliente:', cliente)
+  // TODO: implementar modal de edição
+}
+
+// Formatar data
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  return new Date(dateString).toLocaleDateString('pt-BR')
+}
+
+onMounted(() => {
+  carregarEstatisticas()
+  carregarClientes()
 })
 </script>
