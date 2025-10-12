@@ -516,8 +516,8 @@ import { createClient } from '@supabase/supabase-js'
 const activeTab = ref('dashboard')
 
 // Configuração Supabase
-const supabaseUrl = 'https://cqqeylhspmpilzgmqfiu.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcWV5bGhzcG1waWx6Z21xZml1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxODE1NywiZXhwIjoyMDc1MDk0MTU3fQ.w6ib6zMKcz7G-HBjYQBp6eOWLo7gLl5VNz9F9WVGaoc'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cqqeylhspmpilzgmqfiu.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxcWV5bGhzcG1waWx6Z21xZml1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTUxODE1NywiZXhwIjoyMDc1MDk0MTU3fQ.w6ib6zMKcz7G-HBjYQBp6eOWLo7gLl5VNz9F9WVGaoc'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Dados reais do banco
