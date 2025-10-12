@@ -33,7 +33,10 @@
       "Bash(ls:*)",
       "WebFetch(domain:mcp.supabase.com)",
       "Bash(claude mcp add:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(flutter clean:*)",
+      "Bash(flutter build:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
