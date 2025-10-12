@@ -58,41 +58,49 @@ export interface OrganizacaoCreate {
 }
 
 class OrganizacoesService {
-  // Login usando banco de dados Supabase
+  // Login usando Supabase Auth
   async login(email: string, senha: string) {
     try {
-      console.log('OrganizacoesService: Tentando login:', email)
+      console.log('OrganizacoesService: Tentando login com Supabase Auth:', email)
       
-      const { data, error } = await supabase
-        .from('funcionarios')
-        .select(`
-          id, nome, email, senha, cargo, role, ativo, ultimo_login,
-          organizacao_id
-        `)
-        .eq('email', email)
-        .eq('ativo', true)
-        .single()
+      // Fazer login com Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: senha
+      })
 
-      console.log('OrganizacoesService: Resposta login:', { data, error })
+      console.log('OrganizacoesService: Resposta Supabase Auth:', { authData, authError })
 
-      if (error || !data) {
+      if (authError || !authData.user) {
         return { success: false, error: 'Credenciais inválidas' }
       }
 
-      // Verificação simples da senha (em produção usar bcrypt.compare)
-      if (data.senha !== senha) {
-        return { success: false, error: 'Senha incorreta' }
+      // Buscar dados do funcionário usando o auth_user_id
+      const { data: funcionarioData, error: funcionarioError } = await supabase
+        .from('funcionarios')
+        .select(`
+          id, nome, email, cargo, role, ativo, ultimo_login,
+          organizacao_id
+        `)
+        .eq('auth_user_id', authData.user.id)
+        .eq('ativo', true)
+        .single()
+
+      console.log('OrganizacoesService: Dados funcionário:', { funcionarioData, funcionarioError })
+
+      if (funcionarioError || !funcionarioData) {
+        return { success: false, error: 'Funcionário não encontrado' }
       }
 
-      // Buscar informações da organização separadamente
+      // Buscar informações da organização
       let organizacao_nome = 'Organização'
       let organizacao_tipo = 'matriz'
       
-      if (data.organizacao_id) {
+      if (funcionarioData.organizacao_id) {
         const { data: orgData } = await supabase
           .from('organizacoes')
           .select('nome, tipo')
-          .eq('id', data.organizacao_id)
+          .eq('id', funcionarioData.organizacao_id)
           .single()
         
         if (orgData) {
@@ -105,12 +113,13 @@ class OrganizacoesService {
       await supabase
         .from('funcionarios')
         .update({ ultimo_login: new Date().toISOString() })
-        .eq('id', data.id)
+        .eq('id', funcionarioData.id)
 
       return {
         success: true,
         funcionario: {
-          ...data,
+          ...funcionarioData,
+          auth_user_id: authData.user.id,
           organizacao_nome,
           organizacao_tipo
         }
