@@ -19,22 +19,9 @@ const router = createRouter({
       redirect: '/dashboard'
     },
     {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: { requiresGuest: true }
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
-      meta: { requiresGuest: true }
-    },
-    {
       path: '/dashboard',
       name: 'dashboard',
-      component: () => import('@/views/SimpleDashboard.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/views/MatrizDashboard.vue')
     },
     {
       path: '/admin/dashboard',
@@ -81,29 +68,9 @@ const router = createRouter({
   ]
 })
 
+// Sem autenticação - acesso direto
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    // Redirecionar para dashboard correto baseado no role
-    const user = authStore.user
-    if (user?.organizacao_tipo === 'matriz' && user?.role === 'admin') {
-      next('/admin/dashboard')
-    } else {
-      next('/dashboard')
-    }
-  } else if (to.meta.requiresAdmin) {
-    const user = authStore.user
-    if (!user || user.organizacao_tipo !== 'matriz' || user.role !== 'admin') {
-      next('/dashboard') // Redirecionar para dashboard normal se não for admin da matriz
-    } else {
-      next()
-    }
-  } else {
-    next()
-  }
+  next()
 })
 
 export default router
