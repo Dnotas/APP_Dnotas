@@ -177,8 +177,7 @@
                 <thead class="border-b border-gray-800">
                   <tr>
                     <th class="text-left p-4 text-gray-400 font-medium">Nome</th>
-                    <th class="text-left p-4 text-gray-400 font-medium">Email</th>
-                    <th class="text-left p-4 text-gray-400 font-medium">Telefone</th>
+                    <th class="text-left p-4 text-gray-400 font-medium">CNPJ</th>
                     <th class="text-left p-4 text-gray-400 font-medium">Cadastrado</th>
                     <th class="text-left p-4 text-gray-400 font-medium">Ações</th>
                   </tr>
@@ -186,8 +185,7 @@
                 <tbody>
                   <tr v-for="cliente in clientes" :key="cliente.id" class="border-b border-gray-800 hover:bg-gray-800/30">
                     <td class="p-4 text-white">{{ cliente.nome_empresa }}</td>
-                    <td class="p-4 text-gray-300">{{ cliente.email }}</td>
-                    <td class="p-4 text-gray-300">{{ cliente.telefone || '-' }}</td>
+                    <td class="p-4 text-gray-300">{{ cliente.cnpj }}</td>
                     <td class="p-4 text-gray-300">{{ formatDate(cliente.created_at) }}</td>
                     <td class="p-4">
                       <button @click="editarCliente(cliente)" class="text-blue-400 hover:text-blue-300 mr-3">
@@ -225,22 +223,10 @@
                 </div>
                 
                 <div>
-                  <label class="block text-gray-400 text-sm mb-2">Email</label>
-                  <input v-model="novoCliente.email" type="email" required 
+                  <label class="block text-gray-400 text-sm mb-2">Senha</label>
+                  <input v-model="novoCliente.senha" type="password" required 
+                         placeholder="Digite a senha do cliente"
                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-                </div>
-                
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">Telefone</label>
-                  <input v-model="novoCliente.telefone" type="text" 
-                         placeholder="(11) 99999-9999"
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
-                </div>
-                
-                <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                  <p class="text-blue-400 text-sm">
-                    💡 Uma senha temporária será gerada automaticamente para o cliente fazer login no APP.
-                  </p>
                 </div>
               </div>
               
@@ -559,9 +545,8 @@ const salvandoFilial = ref(false)
 
 const novoCliente = ref({
   nome: '',
-  email: '',
-  telefone: '',
-  cnpj: ''
+  cnpj: '',
+  senha: ''
 })
 
 const novoFuncionario = ref({
@@ -622,29 +607,23 @@ const salvarCliente = async () => {
   try {
     salvandoCliente.value = true
     
-    // Gerar senha temporária
-    const senhaTemporaria = Math.random().toString(36).slice(-8)
-    
     const { data, error } = await supabase
       .from('clientes')
       .insert([{
         cnpj: novoCliente.value.cnpj,
         nome_empresa: novoCliente.value.nome,
-        email: novoCliente.value.email,
-        telefone: novoCliente.value.telefone,
+        senha: novoCliente.value.senha,
         filial_id: 'matriz-id',
-        senha: senhaTemporaria,
         is_active: true
       }])
       .select()
     
     if (error) throw error
     
-    // Mostrar senha gerada
-    alert(`Cliente cadastrado com sucesso!\nSenha temporária: ${senhaTemporaria}\n\nO cliente pode fazer login no APP com CNPJ e esta senha.`)
+    alert('Cliente cadastrado com sucesso!')
     
     // Limpar formulário e fechar modal
-    novoCliente.value = { nome: '', email: '', telefone: '', cnpj: '' }
+    novoCliente.value = { nome: '', cnpj: '', senha: '' }
     showNovoCliente.value = false
     
     // Recarregar listas
