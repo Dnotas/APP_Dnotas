@@ -185,7 +185,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="cliente in clientes" :key="cliente.id" class="border-b border-gray-800 hover:bg-gray-800/30">
-                    <td class="p-4 text-white">{{ cliente.nome }}</td>
+                    <td class="p-4 text-white">{{ cliente.nome_empresa }}</td>
                     <td class="p-4 text-gray-300">{{ cliente.email }}</td>
                     <td class="p-4 text-gray-300">{{ cliente.telefone || '-' }}</td>
                     <td class="p-4 text-gray-300">{{ formatDate(cliente.created_at) }}</td>
@@ -212,8 +212,15 @@
             <form @submit.prevent="salvarCliente">
               <div class="space-y-4">
                 <div>
-                  <label class="block text-gray-400 text-sm mb-2">Nome</label>
+                  <label class="block text-gray-400 text-sm mb-2">Nome da Empresa</label>
                   <input v-model="novoCliente.nome" type="text" required 
+                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-gray-400 text-sm mb-2">CNPJ</label>
+                  <input v-model="novoCliente.cnpj" type="text" required
+                         placeholder="00.000.000/0000-00"
                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
                 </div>
                 
@@ -226,13 +233,14 @@
                 <div>
                   <label class="block text-gray-400 text-sm mb-2">Telefone</label>
                   <input v-model="novoCliente.telefone" type="text" 
+                         placeholder="(11) 99999-9999"
                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
                 </div>
                 
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">CNPJ</label>
-                  <input v-model="novoCliente.cnpj" type="text" 
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                  <p class="text-blue-400 text-sm">
+                    💡 Uma senha temporária será gerada automaticamente para o cliente fazer login no APP.
+                  </p>
                 </div>
               </div>
               
@@ -330,9 +338,9 @@ const carregarEstatisticas = async () => {
   try {
     isLoading.value = true
     
-    // Contar clientes reais da tabela organizacoes
+    // Contar clientes reais da tabela clientes
     const { count: clientesCount } = await supabase
-      .from('organizacoes')
+      .from('clientes')
       .select('*', { count: 'exact', head: true })
     
     stats.value.totalClientes = clientesCount || 0
@@ -349,7 +357,7 @@ const carregarEstatisticas = async () => {
 const carregarClientes = async () => {
   try {
     const { data, error } = await supabase
-      .from('organizacoes')
+      .from('clientes')
       .select('*')
       .order('created_at', { ascending: false })
     
@@ -367,19 +375,26 @@ const salvarCliente = async () => {
   try {
     salvandoCliente.value = true
     
+    // Gerar senha temporária
+    const senhaTemporaria = Math.random().toString(36).slice(-8)
+    
     const { data, error } = await supabase
-      .from('organizacoes')
+      .from('clientes')
       .insert([{
-        nome: novoCliente.value.nome,
+        cnpj: novoCliente.value.cnpj,
+        nome_empresa: novoCliente.value.nome,
         email: novoCliente.value.email,
         telefone: novoCliente.value.telefone,
-        cnpj: novoCliente.value.cnpj,
-        tipo: 'cliente',
-        ativo: true
+        filial_id: 'matriz-id',
+        senha: senhaTemporaria,
+        is_active: true
       }])
       .select()
     
     if (error) throw error
+    
+    // Mostrar senha gerada
+    alert(`Cliente cadastrado com sucesso!\nSenha temporária: ${senhaTemporaria}\n\nO cliente pode fazer login no APP com CNPJ e esta senha.`)
     
     // Limpar formulário e fechar modal
     novoCliente.value = { nome: '', email: '', telefone: '', cnpj: '' }
@@ -404,7 +419,7 @@ const removerCliente = async (id) => {
   
   try {
     const { error } = await supabase
-      .from('organizacoes')
+      .from('clientes')
       .delete()
       .eq('id', id)
     
