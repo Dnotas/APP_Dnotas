@@ -129,6 +129,17 @@ class OrganizacoesService {
     }
   }
 
+  // Logout do Supabase Auth
+  async logout() {
+    try {
+      await supabase.auth.signOut()
+      return { success: true }
+    } catch (error) {
+      console.error('Erro no logout:', error)
+      return { success: false }
+    }
+  }
+
   // Listar todas as organizações (só matriz pode ver)
   async getOrganizacoes() {
     try {

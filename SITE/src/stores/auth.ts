@@ -1,25 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { User } from '@/types'
-import { apiService } from '@/services/api'
 import { organizacoesService, type Funcionario } from '@/services/organizacoes'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<Funcionario | null>(null)
-  const token = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  const isAuthenticated = computed(() => !!user.value && !!token.value)
+  const isAuthenticated = computed(() => !!user.value)
 
   const initializeAuth = () => {
-    const savedToken = localStorage.getItem('auth_token')
     const savedUser = localStorage.getItem('auth_user')
-    
-    if (savedToken && savedUser) {
-      token.value = savedToken
+    if (savedUser) {
       user.value = JSON.parse(savedUser)
-      apiService.setAuthToken(savedToken)
     }
   }
 
@@ -28,18 +21,13 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       error.value = null
       
-      console.log('AuthStore: Tentando login com:', email)
+      console.log('AuthStore: Tentando login com Supabase:', email)
       const response = await organizacoesService.login(email, password)
       console.log('AuthStore: Resposta do login:', response)
       
       if (response.success && response.funcionario) {
         user.value = response.funcionario
-        token.value = 'func_token_' + Date.now()
-        
-        localStorage.setItem('auth_token', token.value)
         localStorage.setItem('auth_user', JSON.stringify(response.funcionario))
-        
-        apiService.setAuthToken(token.value)
         
         console.log('AuthStore: Login realizado com sucesso:', response.funcionario)
         return true
@@ -57,15 +45,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    // Logout do Supabase Auth
+    await organizacoesService.logout()
+    
     user.value = null
-    token.value = null
     error.value = null
-    
-    localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
-    
-    apiService.setAuthToken(null)
   }
 
   const clearError = () => {
@@ -74,7 +60,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
-    token,
     isLoading,
     error,
     isAuthenticated,
