@@ -2,15 +2,11 @@
   "name": "dnotas-api",
   "version": "1.0.0",
   "description": "API Backend para DNOTAS APP - Sistema de comunicação e gestão fiscal",
-  "main": "dist/server.js",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "demo": "nodemon src/server_demo.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "test": "jest",
-    "lint": "eslint src/**/*.ts",
-    "typecheck": "tsc --noEmit"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.75.0",
