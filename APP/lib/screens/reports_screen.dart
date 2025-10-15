@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
+import 'calendar_report_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -17,11 +18,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
   double _vendasDebito = 0.0;
   double _vendasPix = 0.0;
   double _vendasValeAlimentacao = 0.0;
+  double _vendasDinheiro = 0.0;
+  double _vendasTransferencia = 0.0;
+  
+  List<Map<String, dynamic>> _solicitacoesRelatorios = [];
+  bool _isLoadingSolicitacoes = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadSolicitacoes();
   }
 
   Future<void> _loadData() async {
@@ -30,38 +37,88 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final cnpj = authProvider.currentUser?.cnpj;
       final token = authProvider.token;
       
-      if (cnpj != null && token != null) {
-        // TODO: Implementar API para buscar dados de vendas reais
-        // final data = await ApiService.getClientSales(cnpj, token);
+      print('DEBUG: CNPJ: $cnpj');
+      print('DEBUG: Token: ${token != null ? 'EXISTS' : 'NULL'}');
+      
+      if (cnpj != null) {
+        print('DEBUG: Chamando getDailyReports...');
+        final data = await ApiService.getDailyReports(cnpj);
+        print('DEBUG: Dados recebidos: $data');
         setState(() {
-          _vendasCredito = 15250.30;
-          _vendasDebito = 8975.45;
-          _vendasPix = 12380.90;
-          _vendasValeAlimentacao = 3420.75;
-          _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao;
+          _vendasCredito = data['credito'] ?? 0.0;
+          _vendasDebito = data['debito'] ?? 0.0;
+          _vendasPix = data['pix'] ?? 0.0;
+          _vendasValeAlimentacao = data['vale'] ?? 0.0;
+          _vendasDinheiro = data['dinheiro'] ?? 0.0;
+          _vendasTransferencia = data['transferencia'] ?? 0.0;
+          _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao + _vendasDinheiro + _vendasTransferencia;
           _isLoading = false;
         });
       } else {
-        // Dados de exemplo para apresentação
+        print('DEBUG: CNPJ é null - sem dados para exibir');
         setState(() {
-          _vendasCredito = 15250.30;
-          _vendasDebito = 8975.45;
-          _vendasPix = 12380.90;
-          _vendasValeAlimentacao = 3420.75;
-          _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao;
+          _vendasCredito = 0.0;
+          _vendasDebito = 0.0;
+          _vendasPix = 0.0;
+          _vendasValeAlimentacao = 0.0;
+          _vendasDinheiro = 0.0;
+          _vendasTransferencia = 0.0;
+          _totalVendas = 0.0;
           _isLoading = false;
         });
       }
     } catch (e) {
-      // Fallback com dados de exemplo
+      print('DEBUG: Erro ao carregar dados: $e');
+      // Retorna zeros em caso de erro
       setState(() {
-        _vendasCredito = 15250.30;
-        _vendasDebito = 8975.45;
-        _vendasPix = 12380.90;
-        _vendasValeAlimentacao = 3420.75;
-        _totalVendas = _vendasCredito + _vendasDebito + _vendasPix + _vendasValeAlimentacao;
+        _vendasCredito = 0.0;
+        _vendasDebito = 0.0;
+        _vendasPix = 0.0;
+        _vendasValeAlimentacao = 0.0;
+        _vendasDinheiro = 0.0;
+        _vendasTransferencia = 0.0;
+        _totalVendas = 0.0;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadSolicitacoes() async {
+    setState(() {
+      _isLoadingSolicitacoes = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final cnpj = authProvider.currentUser?.cnpj;
+      final token = authProvider.token;
+      
+      if (cnpj != null && token != null) {
+        final solicitacoes = await ApiService.getSolicitacoesRelatorios(cnpj, token);
+        setState(() {
+          _solicitacoesRelatorios = solicitacoes;
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar solicitações: $e');
+    } finally {
+      setState(() {
+        _isLoadingSolicitacoes = false;
+      });
+    }
+  }
+
+  Future<void> _openCalendar() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CalendarReportScreen(),
+      ),
+    );
+    
+    // Se retornou true, significa que foi feita uma solicitação
+    if (result == true) {
+      _loadSolicitacoes(); // Recarrega as solicitações
     }
   }
 
@@ -420,46 +477,225 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    // Row adicional para Dinheiro e Transferência
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.money, color: Colors.yellow, size: 20),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Dinheiro',
+                                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'R\$ ${_vendasDinheiro.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.swap_horiz, color: Colors.cyan, size: 20),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Transfer.',
+                                  style: TextStyle(color: Colors.grey, fontSize: 10),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'R\$ ${_vendasTransferencia.toStringAsFixed(2).replaceAll('.', ',')}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
                     
-                    // Resumo mensal
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade800),
+                    // Botão para solicitar relatório customizado
+                    GestureDetector(
+                      onTap: _openCalendar,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A2A2A),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade800),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, color: Colors.blue, size: 24),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Solicitar Relatório',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Escolha a data ou período para relatório personalizado',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.trending_up, color: Colors.green, size: 24),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Lista de relatórios solicitados
+                    if (_solicitacoesRelatorios.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A2A2A),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade800),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  'Resumo do mês',
+                                const Icon(Icons.history, color: Colors.orange, size: 20),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Relatórios Solicitados',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
+                                const Spacer(),
                                 Text(
-                                  'Veja o desempenho completo das suas vendas',
-                                  style: TextStyle(
+                                  '${_solicitacoesRelatorios.length}',
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 12,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
-                        ],
+                            const SizedBox(height: 12),
+                            ...(_solicitacoesRelatorios.take(3).map((solicitacao) {
+                              final status = solicitacao['status'] as String;
+                              final dataInicio = DateTime.parse(solicitacao['data_inicio']);
+                              final dataFim = DateTime.parse(solicitacao['data_fim']);
+                              final tipoPeriodo = solicitacao['tipo_periodo'] as String;
+                              
+                              Color statusColor;
+                              IconData statusIcon;
+                              
+                              switch (status) {
+                                case 'pendente':
+                                  statusColor = Colors.orange;
+                                  statusIcon = Icons.schedule;
+                                  break;
+                                case 'processando':
+                                  statusColor = Colors.blue;
+                                  statusIcon = Icons.refresh;
+                                  break;
+                                case 'concluido':
+                                  statusColor = Colors.green;
+                                  statusIcon = Icons.check_circle;
+                                  break;
+                                default:
+                                  statusColor = Colors.red;
+                                  statusIcon = Icons.error;
+                              }
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1A1A1A),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(statusIcon, color: statusColor, size: 16),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            tipoPeriodo == 'dia_unico' 
+                                                ? '${dataInicio.day}/${dataInicio.month}/${dataInicio.year}'
+                                                : '${dataInicio.day}/${dataInicio.month} até ${dataFim.day}/${dataFim.month}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            status.toUpperCase(),
+                                            style: TextStyle(
+                                              color: statusColor,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (status == 'concluido')
+                                      const Icon(Icons.visibility, color: Colors.grey, size: 16),
+                                  ],
+                                ),
+                              );
+                            }).toList()),
+                            if (_solicitacoesRelatorios.length > 3)
+                              Container(
+                                margin: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'e mais ${_solicitacoesRelatorios.length - 3} solicitações...',
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
