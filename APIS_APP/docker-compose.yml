@@ -46,7 +46,7 @@ services:
     container_name: dnotas-api
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 9999
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: dnotas_db
@@ -61,7 +61,7 @@ services:
       FIREBASE_TOKEN_URI: ${FIREBASE_TOKEN_URI:-https://oauth2.googleapis.com/token}
       REDIS_URL: redis://redis:6379
     ports:
-      - "3000:3000"
+      - "9999:9999"
     networks:
       - dnotas-network
     depends_on:
@@ -73,7 +73,7 @@ services:
       - uploads_data:/app/uploads
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:9999/health"]
       interval: 30s
       timeout: 10s
       retries: 3

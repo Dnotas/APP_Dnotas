@@ -100,8 +100,8 @@ npm run lint
 
 A documentação completa está disponível via Swagger UI:
 
-- **Local**: http://localhost:3000/api-docs
-- **Produção**: https://api.dnotas.com/api-docs
+- **Local**: http://localhost:9999/api-docs
+- **Produção**: https://api.dnotas.com.br/api-docs
 
 ### Principais Endpoints
 
@@ -167,7 +167,7 @@ O sistema suporta múltiplas filiais com isolamento de dados:
 
 ```env
 NODE_ENV=production
-PORT=3000
+PORT=9999
 DB_HOST=localhost
 DB_NAME=dnotas_db
 JWT_SECRET=seu_jwt_secret_muito_seguro
@@ -199,7 +199,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 COPY dist ./dist
-EXPOSE 3000
+EXPOSE 9999
 CMD ["node", "dist/server.js"]
 ```
 
