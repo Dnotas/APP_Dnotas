@@ -52,8 +52,7 @@ app.post('/vendas_hoje', async (req, res) => {
       pix = 0,
       vale = 0,
       dinheiro = 0,
-      transferencia = 0,
-      filial_id = 'matriz' // padrão matriz se não especificado
+      transferencia = 0
     } = req.body;
 
     // Validação básica
@@ -92,7 +91,6 @@ app.post('/vendas_hoje', async (req, res) => {
           vendas_dinheiro: dinheiro,
           vendas_transferencia: transferencia,
           total_vendas: total_vendas,
-          filial_id: filial_id,
           updated_at: new Date().toISOString()
         })
         .eq('cliente_cnpj', cnpj)
@@ -110,7 +108,6 @@ app.post('/vendas_hoje', async (req, res) => {
         .from('relatorios_vendas')
         .insert([{
           cliente_cnpj: cnpj,
-          filial_id: filial_id,
           data_relatorio: hoje,
           vendas_credito: credito,
           vendas_debito: debito,
@@ -143,8 +140,7 @@ app.post('/vendas_hoje', async (req, res) => {
           dinheiro: parseFloat(dinheiro),
           transferencia: parseFloat(transferencia),
           total: total_vendas
-        },
-        filial_id: filial_id
+        }
       }
     });
 
