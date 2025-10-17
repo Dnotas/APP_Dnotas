@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 9999;
 
 // Configuração dos certificados SSL
-const certPath = 'C:/CERTIFICADOS'; // Pasta onde o win-acme salva os certificados
+const certPath = 'C:/CERTIFICADOSTONE'; // Pasta onde o win-acme salva os certificados
 
 const sslOptions = {
     key: fs.readFileSync(path.join(certPath, 'api.dnotas.com.br-key.pem')),
