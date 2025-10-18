@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
 import '../models/user_model.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -53,6 +54,12 @@ class AuthProvider with ChangeNotifier {
         print('Tentando criar UserModel com: $response');
         _currentUser = UserModel.fromJson(response);
         print('UserModel criado com sucesso: ${_currentUser?.nomeEmpresa}');
+        
+        // Registrar token FCM após login bem-sucedido
+        if (_currentUser?.cnpj != null) {
+          NotificationService.registerFCMToken(_currentUser!.cnpj);
+        }
+        
         _isLoading = false;
         notifyListeners();
         return true;

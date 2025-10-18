@@ -393,6 +393,28 @@ app.post('/api/admin/relatorios/processar/:solicitacao_id', async (req, res) => 
 
     console.log(`Relatório processado para solicitação ${solicitacao_id} por ${processado_por}`);
 
+    // Enviar notificação push para o cliente
+    try {
+      const periodo = solicitacao.tipo_periodo === 'dia_unico' 
+        ? new Date(solicitacao.data_inicio).toLocaleDateString('pt-BR')
+        : `${new Date(solicitacao.data_inicio).toLocaleDateString('pt-BR')} a ${new Date(solicitacao.data_fim).toLocaleDateString('pt-BR')}`;
+
+      await sendPushNotification(
+        solicitacao.cliente_cnpj,
+        '📊 Relatório Pronto!',
+        `Seu relatório de vendas (${periodo}) está disponível para visualização.`,
+        {
+          tipo: 'relatorio_pronto',
+          relatorio_id: solicitacao_id,
+          periodo: periodo,
+          screen: 'reports'
+        }
+      );
+    } catch (notificationError) {
+      console.error('Erro ao enviar notificação:', notificationError);
+      // Não falhar a requisição se notificação der erro
+    }
+
     res.json({
       success: true,
       message: 'Relatório processado com sucesso'
@@ -434,6 +456,122 @@ app.get('/api/relatorios/processado/:solicitacao_id', async (req, res) => {
       success: false,
       error: 'Erro interno do servidor',
       details: error.message
+    });
+  }
+});
+
+// ========================================
+// ENDPOINTS FCM (FIREBASE CLOUD MESSAGING)
+// ========================================
+
+// Tabela de tokens FCM (em memória para simplificar, em produção usar banco)
+const fcmTokens = new Map(); // CNPJ -> { token, platform, lastUpdate }
+
+// Registrar token FCM
+app.post('/api/fcm/register', async (req, res) => {
+  try {
+    const { cnpj, fcm_token, platform } = req.body;
+
+    if (!cnpj || !fcm_token) {
+      return res.status(400).json({
+        success: false,
+        error: 'CNPJ e FCM token são obrigatórios'
+      });
+    }
+
+    // Armazenar token (em produção, salvar no banco)
+    fcmTokens.set(cnpj, {
+      token: fcm_token,
+      platform: platform || 'unknown',
+      lastUpdate: new Date().toISOString()
+    });
+
+    console.log(`📱 Token FCM registrado para CNPJ: ${cnpj} (${platform})`);
+
+    res.json({
+      success: true,
+      message: 'Token FCM registrado com sucesso'
+    });
+
+  } catch (error) {
+    console.error('Erro ao registrar token FCM:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
+
+// Função para enviar notificação (simulação - em produção usar Firebase Admin SDK)
+async function sendPushNotification(cnpj, title, body, data = {}) {
+  try {
+    const tokenInfo = fcmTokens.get(cnpj);
+    
+    if (!tokenInfo) {
+      console.log(`❌ Token FCM não encontrado para CNPJ: ${cnpj}`);
+      return false;
+    }
+
+    // Em produção, aqui você usaria o Firebase Admin SDK para enviar a notificação
+    // Por enquanto, vamos simular o envio
+    console.log(`🔔 SIMULANDO envio de notificação para ${cnpj}:`);
+    console.log(`   📱 Token: ${tokenInfo.token.substring(0, 20)}...`);
+    console.log(`   📋 Título: ${title}`);
+    console.log(`   💬 Mensagem: ${body}`);
+    console.log(`   📊 Dados: ${JSON.stringify(data)}`);
+
+    // TODO: Implementar envio real com Firebase Admin SDK
+    /*
+    const message = {
+      notification: {
+        title: title,
+        body: body,
+      },
+      data: data,
+      token: tokenInfo.token,
+    };
+
+    const response = await admin.messaging().send(message);
+    console.log('✅ Notificação enviada:', response);
+    */
+
+    return true;
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar notificação:', error);
+    return false;
+  }
+}
+
+// Endpoint para testar notificação
+app.post('/api/fcm/test', async (req, res) => {
+  try {
+    const { cnpj } = req.body;
+
+    if (!cnpj) {
+      return res.status(400).json({
+        success: false,
+        error: 'CNPJ é obrigatório'
+      });
+    }
+
+    const sent = await sendPushNotification(
+      cnpj,
+      '🧪 Teste DNOTAS',
+      'Esta é uma notificação de teste!',
+      { tipo: 'teste', timestamp: new Date().toISOString() }
+    );
+
+    res.json({
+      success: sent,
+      message: sent ? 'Notificação de teste enviada' : 'Falha ao enviar notificação'
+    });
+
+  } catch (error) {
+    console.error('Erro ao enviar notificação de teste:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
     });
   }
 });

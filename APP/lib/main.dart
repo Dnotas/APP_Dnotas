@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/supabase_service.dart';
 import 'services/notification_service.dart';
 import 'screens/login_screen.dart';
@@ -10,6 +11,9 @@ import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Registrar handler para mensagens em background
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   
   // Inicializar Supabase
   await SupabaseService.initialize();

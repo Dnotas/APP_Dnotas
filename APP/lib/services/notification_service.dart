@@ -1,16 +1,33 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  static String? _fcmToken;
 
   static Future<void> initialize() async {
     // Não inicializar notificações na web
     if (kIsWeb) {
       print('Notificações não disponíveis na web');
       return;
+    }
+    
+    // Inicializar Firebase
+    try {
+      await Firebase.initializeApp();
+      print('✅ Firebase inicializado');
+      
+      // Inicializar FCM
+      await _initializeFCM();
+    } catch (e) {
+      print('❌ Erro ao inicializar Firebase: $e');
     }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -191,4 +208,142 @@ class NotificationService {
           );
     }
   }
+
+  // ===============================
+  // FIREBASE CLOUD MESSAGING (FCM)
+  // ===============================
+  
+  // Inicializar FCM
+  static Future<void> _initializeFCM() async {
+    try {
+      // Solicitar permissões
+      NotificationSettings settings = await _firebaseMessaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+      
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        print('✅ Permissão FCM concedida');
+      } else {
+        print('❌ Permissão FCM negada');
+        return;
+      }
+      
+      // Obter token FCM
+      _fcmToken = await _firebaseMessaging.getToken();
+      print('🔥 Token FCM: $_fcmToken');
+      
+      // Configurar handlers de mensagens
+      _setupFCMHandlers();
+      
+    } catch (e) {
+      print('❌ Erro ao inicializar FCM: $e');
+    }
+  }
+  
+  // Configurar handlers do FCM
+  static void _setupFCMHandlers() {
+    // Mensagens em primeiro plano
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('📱 FCM - Mensagem em primeiro plano: ${message.notification?.title}');
+      
+      // Mostrar notificação local quando app estiver em primeiro plano
+      if (message.notification != null) {
+        showNotification(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          title: message.notification!.title ?? 'DNOTAS',
+          body: message.notification!.body ?? 'Nova notificação',
+          payload: jsonEncode(message.data),
+        );
+      }
+    });
+    
+    // Mensagens quando app está em segundo plano (clique abre o app)
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('📱 FCM - App aberto por notificação: ${message.notification?.title}');
+      _handleFCMNavigation(message.data);
+    });
+    
+    // Verificar se app foi aberto por notificação (app estava fechado)
+    FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        print('📱 FCM - App iniciado por notificação: ${message.notification?.title}');
+        _handleFCMNavigation(message.data);
+      }
+    });
+  }
+  
+  // Tratar navegação baseada nos dados da notificação
+  static void _handleFCMNavigation(Map<String, dynamic> data) {
+    final String? tipo = data['tipo'];
+    
+    if (tipo == 'relatorio_pronto') {
+      print('🎯 Navegar para relatórios - ID: ${data['relatorio_id']}');
+      // TODO: Implementar navegação
+    }
+  }
+  
+  // Registrar token FCM no backend
+  static Future<void> registerFCMToken(String cnpj) async {
+    if (_fcmToken == null) {
+      print('❌ Token FCM não disponível');
+      return;
+    }
+    
+    try {
+      const String apiUrl = 'https://api.dnotas.com.br:9999/api/fcm/register';
+      
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'cnpj': cnpj,
+          'fcm_token': _fcmToken,
+          'platform': Platform.isAndroid ? 'android' : 'ios',
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        print('✅ Token FCM registrado no backend para CNPJ: $cnpj');
+      } else {
+        print('❌ Erro ao registrar token FCM: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Erro ao registrar token FCM: $e');
+    }
+  }
+  
+  // Obter token FCM
+  static String? get fcmToken => _fcmToken;
+  
+  // Notificação específica para relatório pronto
+  static Future<void> showReportReadyNotification({
+    required String reportId,
+    required String period,
+  }) async {
+    await showNotification(
+      id: 999, // ID específico para relatórios
+      title: '📊 Relatório Pronto!',
+      body: 'Seu relatório de vendas ($period) está disponível para visualização.',
+      payload: jsonEncode({
+        'tipo': 'relatorio_pronto',
+        'relatorio_id': reportId,
+        'screen': 'reports'
+      }),
+    );
+  }
+}
+
+// Handler para mensagens em background (deve ser função top-level)
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('📱 FCM Background: ${message.notification?.title}');
 }
