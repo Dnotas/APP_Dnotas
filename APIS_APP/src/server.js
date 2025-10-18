@@ -1,10 +1,22 @@
 const express = require('express');
 const cors = require('cors');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 1111;
+const PORT = process.env.PORT || 9999;
+
+// Configuração dos certificados SSL
+const certPath = 'C:/CERTIFICADOSTONE'; // Pasta onde o win-acme salva os certificados
+
+const sslOptions = {
+    key: fs.readFileSync(path.join(certPath, 'api.dnotas.com.br-key.pem')),
+    cert: fs.readFileSync(path.join(certPath, 'api.dnotas.com.br-crt.pem')),
+    ca: fs.readFileSync(path.join(certPath, 'api.dnotas.com.br-chain.pem'))
+};
 
 // Configuração do Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -426,11 +438,12 @@ app.get('/api/relatorios/processado/:solicitacao_id', async (req, res) => {
   }
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📊 API de Vendas disponível em: http://localhost:${PORT}/vendas_hoje`);
-  console.log(`📱 API para APP disponível em: http://localhost:${PORT}/api/relatorios/vendas/:cnpj`);
-  console.log(`📋 API de Solicitações disponível em: http://localhost:${PORT}/api/solicitacoes/relatorio`);
-  console.log(`👨‍💼 API Admin disponível em: http://localhost:${PORT}/api/admin/solicitacoes/pendentes`);
+// Iniciar servidor HTTPS
+https.createServer(sslOptions, app).listen(PORT, () => {
+  console.log(`🚀 Servidor rodando com HTTPS na porta ${PORT}`);
+  console.log(`📊 API de Vendas disponível em: https://api.dnotas.com.br:${PORT}/vendas_hoje`);
+  console.log(`📱 API para APP disponível em: https://api.dnotas.com.br:${PORT}/api/relatorios/vendas/:cnpj`);
+  console.log(`📋 API de Solicitações disponível em: https://api.dnotas.com.br:${PORT}/api/solicitacoes/relatorio`);
+  console.log(`👨‍💼 API Admin disponível em: https://api.dnotas.com.br:${PORT}/api/admin/solicitacoes/pendentes`);
+  console.log(`🔒 Certificados SSL carregados de: ${certPath}`);
 });
