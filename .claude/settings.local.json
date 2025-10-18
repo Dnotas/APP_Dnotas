@@ -36,7 +36,10 @@
       "Bash(find:*)",
       "Bash(flutter clean:*)",
       "Bash(flutter build:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(cat:*)",
+      "Bash(pod install:*)",
+      "Bash(touch:*)"
     ],
     "deny": [],
     "ask": []

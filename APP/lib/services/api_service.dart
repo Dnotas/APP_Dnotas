@@ -6,7 +6,7 @@ import '../models/boleto_model.dart';
 import 'supabase_service.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:1111'; // Altere para sua URL de produção
+  static const String baseUrl = 'https://api.dnotas.com.br:9999';
   
   static Future<Map<String, dynamic>> getClientReports(String cnpj, String token) async {
     try {
