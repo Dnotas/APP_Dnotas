@@ -40,7 +40,8 @@
       "Bash(cat:*)",
       "Bash(pod install:*)",
       "Bash(touch:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

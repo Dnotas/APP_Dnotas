@@ -4,10 +4,42 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const admin = require('firebase-admin');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 9999;
+
+// Inicializar Firebase Admin SDK com variáveis de ambiente
+try {
+  const serviceAccount = {
+    type: "service_account",
+    project_id: process.env.FIREBASE_PROJECT_ID || "dnotas-app",
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : null,
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+    universe_domain: "googleapis.com"
+  };
+
+  if (serviceAccount.private_key && serviceAccount.client_email) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: 'dnotas-app'
+    });
+    console.log('🔥 Firebase Admin SDK inicializado com sucesso');
+  } else {
+    console.log('⚠️ Firebase Admin SDK não inicializado - variáveis de ambiente não configuradas');
+    console.log('ℹ️ Notificações push funcionarão em modo simulação');
+  }
+} catch (error) {
+  console.error('❌ Erro ao inicializar Firebase Admin SDK:', error.message);
+  console.log('ℹ️ Notificações push funcionarão em modo simulação');
+}
 
 // Configuração dos certificados SSL
 const certPath = 'C:/CERTIFICADOSTONE'; // Pasta onde o win-acme salva os certificados
@@ -502,7 +534,7 @@ app.post('/api/fcm/register', async (req, res) => {
   }
 });
 
-// Função para enviar notificação push REAL usando FCM
+// Função para enviar notificação push REAL usando Firebase Admin SDK
 async function sendPushNotification(cnpj, title, body, data = {}) {
   try {
     const tokenInfo = fcmTokens.get(cnpj);
@@ -512,48 +544,51 @@ async function sendPushNotification(cnpj, title, body, data = {}) {
       return false;
     }
 
-    // Preparar payload para FCM
-    const payload = {
-      to: tokenInfo.token,
+    // Converter data para strings (FCM exige)
+    const stringData = {};
+    Object.keys(data).forEach(key => {
+      stringData[key] = String(data[key]);
+    });
+
+    // Preparar mensagem para Firebase Admin SDK
+    const message = {
       notification: {
         title: title,
         body: body,
-        icon: 'ic_launcher',
-        sound: 'default',
-        click_action: 'FLUTTER_NOTIFICATION_CLICK'
       },
-      data: {
-        ...data,
-        click_action: 'FLUTTER_NOTIFICATION_CLICK'
+      data: stringData,
+      token: tokenInfo.token,
+      android: {
+        notification: {
+          icon: 'ic_launcher',
+          sound: 'default',
+          clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+        }
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+            category: 'FLUTTER_NOTIFICATION_CLICK'
+          }
+        }
       }
     };
 
-    // Enviar via FCM HTTP API
-    const fcmResponse = await fetch('https://fcm.googleapis.com/fcm/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'key=BKPyQI4shxN_H97Z5hiB-w2U71wtjejJZNSm-K2lubQpQSC3qrOJpnYMUyliQPsmp7pJgpphB46cqpssikYuKuM4', // Chave Web Push do Firebase
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
+    // Enviar via Firebase Admin SDK
+    const response = await admin.messaging().send(message);
 
-    const result = await fcmResponse.json();
-
-    if (fcmResponse.ok && result.success === 1) {
-      console.log(`✅ Notificação REAL enviada para ${cnpj}:`);
-      console.log(`   📱 Token: ${tokenInfo.token.substring(0, 20)}...`);
-      console.log(`   📋 Título: ${title}`);
-      console.log(`   💬 Mensagem: ${body}`);
-      console.log(`   🎯 Result: ${JSON.stringify(result)}`);
-      return true;
-    } else {
-      console.error(`❌ Erro no envio FCM:`, result);
-      return false;
-    }
+    console.log(`✅ Notificação REAL enviada para ${cnpj}:`);
+    console.log(`   📱 Token: ${tokenInfo.token.substring(0, 20)}...`);
+    console.log(`   📋 Título: ${title}`);
+    console.log(`   💬 Mensagem: ${body}`);
+    console.log(`   🎯 Message ID: ${response}`);
+    
+    return true;
 
   } catch (error) {
     console.error('❌ Erro ao enviar notificação:', error);
+    console.error('❌ Detalhes:', error.message);
     return false;
   }
 }
