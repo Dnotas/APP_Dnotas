@@ -39,7 +39,8 @@
       "Bash(python3:*)",
       "Bash(cat:*)",
       "Bash(pod install:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

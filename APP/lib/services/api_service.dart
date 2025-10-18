@@ -290,15 +290,25 @@ class ApiService {
         }),
       );
 
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
         return data['success'] ?? false;
+      } else {
+        // Tentar decodificar erro da API
+        try {
+          final errorData = json.decode(response.body);
+          final errorMessage = errorData['error'] ?? 'Erro desconhecido';
+          throw Exception('API Error (${response.statusCode}): $errorMessage');
+        } catch (decodeError) {
+          throw Exception('HTTP Error: ${response.statusCode} - ${response.body}');
+        }
       }
-      
-      return false;
     } catch (e) {
       print('Erro ao solicitar relatório: $e');
-      return false;
+      rethrow; // Re-throw para mostrar erro específico
     }
   }
 
