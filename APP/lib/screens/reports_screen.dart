@@ -93,8 +93,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final cnpj = authProvider.currentUser?.cnpj;
       final token = authProvider.token;
       
+      print('DEBUG: Carregando solicitações para CNPJ: $cnpj');
+      
       if (cnpj != null) {
         final solicitacoes = await ApiService.getSolicitacoesRelatorios(cnpj, token);
+        print('DEBUG: Solicitações recebidas: ${solicitacoes.length}');
+        print('DEBUG: Dados: $solicitacoes');
         setState(() {
           _solicitacoesRelatorios = solicitacoes;
         });
@@ -118,6 +122,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     
     // Se retornou true, significa que foi feita uma solicitação
     if (result == true) {
+      print('DEBUG: Solicitação criada, recarregando lista...');
       _loadSolicitacoes(); // Recarrega as solicitações
     }
   }

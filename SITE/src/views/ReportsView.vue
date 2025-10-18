@@ -208,11 +208,18 @@ onMounted(() => {
 async function loadSolicitacoes() {
   loading.value = true
   try {
+    console.log('DEBUG SITE: Carregando solicitações de:', `${API_BASE_URL}/api/admin/solicitacoes/pendentes`)
     const response = await fetch(`${API_BASE_URL}/api/admin/solicitacoes/pendentes`)
+    console.log('DEBUG SITE: Response status:', response.status)
+    
     const data = await response.json()
+    console.log('DEBUG SITE: Response data:', data)
     
     if (data.success) {
       solicitacoesPendentes.value = data.data
+      console.log('DEBUG SITE: Solicitações carregadas:', data.data.length)
+    } else {
+      console.error('DEBUG SITE: API retornou success=false:', data)
     }
   } catch (error) {
     console.error('Erro ao carregar solicitações:', error)
