@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
+import '../firebase_options.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -21,7 +22,9 @@ class NotificationService {
     
     // Inicializar Firebase
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       print('✅ Firebase inicializado');
       
       // Inicializar FCM
@@ -344,6 +347,6 @@ class NotificationService {
 // Handler para mensagens em background (deve ser função top-level)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   print('📱 FCM Background: ${message.notification?.title}');
 }

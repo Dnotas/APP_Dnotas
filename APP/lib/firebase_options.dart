@@ -44,28 +44,28 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'demo-api-key-web',
-    appId: '1:123456789:web:abcdef',
-    messagingSenderId: '123456789',
-    projectId: 'dnotas-demo',
-    authDomain: 'dnotas-demo.firebaseapp.com',
-    storageBucket: 'dnotas-demo.appspot.com',
+    apiKey: 'AIzaSyA88jgjhaYyx0Jr1-vOtQe8jq4nbSxcv6Y',
+    appId: '1:194861914079:web:abcdef123456',
+    messagingSenderId: '194861914079',
+    projectId: 'dnotas-app',
+    authDomain: 'dnotas-app.firebaseapp.com',
+    storageBucket: 'dnotas-app.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'demo-api-key-android',
-    appId: '1:123456789:android:abcdef',
-    messagingSenderId: '123456789',
-    projectId: 'dnotas-demo',
-    storageBucket: 'dnotas-demo.appspot.com',
+    apiKey: 'AIzaSyA88jgjhaYyx0Jr1-vOtQe8jq4nbSxcv6Y',
+    appId: '1:194861914079:android:0151647148c1fb4c54966a',
+    messagingSenderId: '194861914079',
+    projectId: 'dnotas-app',
+    storageBucket: 'dnotas-app.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'demo-api-key-ios',
-    appId: '1:123456789:ios:abcdef',
-    messagingSenderId: '123456789',
-    projectId: 'dnotas-demo',
-    storageBucket: 'dnotas-demo.appspot.com',
+    apiKey: 'AIzaSyA88jgjhaYyx0Jr1-vOtQe8jq4nbSxcv6Y',
+    appId: '1:194861914079:ios:8a9b7c6d5e4f3g2h1i0j',
+    messagingSenderId: '194861914079',
+    projectId: 'dnotas-app',
+    storageBucket: 'dnotas-app.firebasestorage.app',
     iosBundleId: 'com.dnotas.app',
   );
 
