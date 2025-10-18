@@ -502,7 +502,7 @@ app.post('/api/fcm/register', async (req, res) => {
   }
 });
 
-// Função para enviar notificação (simulação - em produção usar Firebase Admin SDK)
+// Função para enviar notificação push REAL usando FCM
 async function sendPushNotification(cnpj, title, body, data = {}) {
   try {
     const tokenInfo = fcmTokens.get(cnpj);
@@ -512,30 +512,45 @@ async function sendPushNotification(cnpj, title, body, data = {}) {
       return false;
     }
 
-    // Em produção, aqui você usaria o Firebase Admin SDK para enviar a notificação
-    // Por enquanto, vamos simular o envio
-    console.log(`🔔 SIMULANDO envio de notificação para ${cnpj}:`);
-    console.log(`   📱 Token: ${tokenInfo.token.substring(0, 20)}...`);
-    console.log(`   📋 Título: ${title}`);
-    console.log(`   💬 Mensagem: ${body}`);
-    console.log(`   📊 Dados: ${JSON.stringify(data)}`);
-
-    // TODO: Implementar envio real com Firebase Admin SDK
-    /*
-    const message = {
+    // Preparar payload para FCM
+    const payload = {
+      to: tokenInfo.token,
       notification: {
         title: title,
         body: body,
+        icon: 'ic_launcher',
+        sound: 'default',
+        click_action: 'FLUTTER_NOTIFICATION_CLICK'
       },
-      data: data,
-      token: tokenInfo.token,
+      data: {
+        ...data,
+        click_action: 'FLUTTER_NOTIFICATION_CLICK'
+      }
     };
 
-    const response = await admin.messaging().send(message);
-    console.log('✅ Notificação enviada:', response);
-    */
+    // Enviar via FCM HTTP API
+    const fcmResponse = await fetch('https://fcm.googleapis.com/fcm/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'key=BKPyQI4shxN_H97Z5hiB-w2U71wtjejJZNSm-K2lubQpQSC3qrOJpnYMUyliQPsmp7pJgpphB46cqpssikYuKuM4', // Chave Web Push do Firebase
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
 
-    return true;
+    const result = await fcmResponse.json();
+
+    if (fcmResponse.ok && result.success === 1) {
+      console.log(`✅ Notificação REAL enviada para ${cnpj}:`);
+      console.log(`   📱 Token: ${tokenInfo.token.substring(0, 20)}...`);
+      console.log(`   📋 Título: ${title}`);
+      console.log(`   💬 Mensagem: ${body}`);
+      console.log(`   🎯 Result: ${JSON.stringify(result)}`);
+      return true;
+    } else {
+      console.error(`❌ Erro no envio FCM:`, result);
+      return false;
+    }
 
   } catch (error) {
     console.error('❌ Erro ao enviar notificação:', error);
