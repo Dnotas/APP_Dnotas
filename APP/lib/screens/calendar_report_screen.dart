@@ -338,7 +338,7 @@ class _CalendarReportScreenState extends State<CalendarReportScreen> {
       final cnpj = authProvider.currentUser?.cnpj;
       final token = authProvider.token;
 
-      if (cnpj == null || token == null) {
+      if (cnpj == null) {
         throw Exception('Usuário não autenticado');
       }
 
@@ -358,7 +358,7 @@ class _CalendarReportScreenState extends State<CalendarReportScreen> {
 
       final success = await ApiService.solicitarRelatorio(
         cnpj: cnpj,
-        token: token,
+        token: token, // pode ser null
         dataInicio: dataInicio,
         dataFim: dataFim,
         tipoPeriodo: tipoPeriodo,

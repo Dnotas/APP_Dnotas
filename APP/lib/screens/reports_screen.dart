@@ -93,7 +93,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final cnpj = authProvider.currentUser?.cnpj;
       final token = authProvider.token;
       
-      if (cnpj != null && token != null) {
+      if (cnpj != null) {
         final solicitacoes = await ApiService.getSolicitacoesRelatorios(cnpj, token);
         setState(() {
           _solicitacoesRelatorios = solicitacoes;

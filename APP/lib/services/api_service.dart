@@ -262,19 +262,25 @@ class ApiService {
   // Método para solicitar relatório customizado
   static Future<bool> solicitarRelatorio({
     required String cnpj,
-    required String token,
+    String? token, // Tornado opcional
     required DateTime dataInicio,
     required DateTime dataFim,
     required String tipoPeriodo,
     String? observacoes,
   }) async {
     try {
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+      
+      // Adicionar Authorization apenas se token existir
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/api/solicitacoes/relatorio'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: headers,
         body: json.encode({
           'cliente_cnpj': cnpj,
           'data_inicio': dataInicio.toIso8601String().split('T')[0],
@@ -297,14 +303,20 @@ class ApiService {
   }
 
   // Método para buscar solicitações de relatórios do cliente
-  static Future<List<Map<String, dynamic>>> getSolicitacoesRelatorios(String cnpj, String token) async {
+  static Future<List<Map<String, dynamic>>> getSolicitacoesRelatorios(String cnpj, [String? token]) async {
     try {
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+      
+      // Adicionar Authorization apenas se token existir
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
       final response = await http.get(
         Uri.parse('$baseUrl/api/solicitacoes/relatorio/$cnpj'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -322,14 +334,20 @@ class ApiService {
   }
 
   // Método para buscar relatório processado
-  static Future<Map<String, dynamic>?> getRelatorioProcessado(String solicitacaoId, String token) async {
+  static Future<Map<String, dynamic>?> getRelatorioProcessado(String solicitacaoId, [String? token]) async {
     try {
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+      
+      // Adicionar Authorization apenas se token existir
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
       final response = await http.get(
         Uri.parse('$baseUrl/api/relatorios/processado/$solicitacaoId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
