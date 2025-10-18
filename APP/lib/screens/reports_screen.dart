@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import 'calendar_report_screen.dart';
@@ -23,12 +24,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
   
   List<Map<String, dynamic>> _solicitacoesRelatorios = [];
   bool _isLoadingSolicitacoes = false;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _loadSolicitacoes();
+    
+    // Timer para atualizar solicitações a cada 30 segundos
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _loadSolicitacoes();
+    });
+  }
+  
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -180,7 +193,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _loadData,
+              onRefresh: () async {
+                await _loadData();
+                await _loadSolicitacoes();
+              },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),

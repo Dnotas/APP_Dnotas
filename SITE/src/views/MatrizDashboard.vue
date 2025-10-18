@@ -21,6 +21,38 @@
       </div>
     </header>
 
+    <!-- Notificação de Relatórios Pendentes -->
+    <div v-if="solicitacoesPendentes.length > 0 && activeTab !== 'relatorios' && !ocultarNotificacao" 
+         class="bg-red-500/90 border-l-4 border-red-700 text-white px-4 py-3 relative backdrop-blur-sm">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <strong class="font-bold">Atenção!</strong>
+          <span class="ml-2">
+            Você tem {{ solicitacoesPendentes.length }} {{ solicitacoesPendentes.length === 1 ? 'relatório pendente' : 'relatórios pendentes' }} para processar.
+          </span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button 
+            @click="activeTab = 'relatorios'" 
+            class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm font-medium transition-colors"
+          >
+            Ver Relatórios
+          </button>
+          <button 
+            @click="ocultarNotificacao = true" 
+            class="text-white hover:text-gray-200 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="flex">
       <!-- Sidebar -->
       <aside class="w-64 h-screen bg-gray-900/50 border-r border-gray-800">
@@ -63,11 +95,18 @@
 
           <a href="#" @click="activeTab = 'relatorios'" 
              :class="[activeTab === 'relatorios' ? 'bg-blue-600' : 'bg-gray-800/50 hover:bg-gray-700']" 
-             class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white transition-colors">
+             class="flex items-center space-x-3 px-4 py-3 rounded-lg text-white transition-colors relative">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <span>Relatórios</span>
+            <!-- Badge de notificação para relatórios pendentes -->
+            <span 
+              v-if="solicitacoesPendentes.length > 0" 
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-gray-900 animate-pulse"
+            >
+              {{ solicitacoesPendentes.length }}
+            </span>
           </a>
 
           <a href="#" @click="activeTab = 'funcionarios'" 
@@ -722,6 +761,7 @@ const modalRelatorioAberto = ref(false)
 const solicitacaoSelecionada = ref(null)
 const datasParaProcessar = ref([])
 const processandoRelatorio = ref(false)
+const ocultarNotificacao = ref(false)
 
 const API_BASE_URL = 'https://api.dnotas.com.br:9999'
 
