@@ -10,27 +10,43 @@ import '../firebase_options.dart';
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  static FirebaseMessaging? _firebaseMessaging;
   static String? _fcmToken;
 
   static Future<void> initialize() async {
-    // Não inicializar notificações na web
+    // Não inicializar notificações na web ou simulador (para debug rápido)
     if (kIsWeb) {
       print('Notificações não disponíveis na web');
       return;
     }
     
-    // Inicializar Firebase
+    // Skip Firebase em simulador para debug mais rápido
+    bool isSimulator = Platform.isIOS && !kIsWeb;
+    if (isSimulator) {
+      print('⚠️ Simulador detectado - pulando inicialização do Firebase para debug rápido');
+      return;
+    }
+    
+    // Inicializar Firebase apenas em dispositivos reais
     try {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
-      );
+      ).timeout(const Duration(seconds: 3));
       print('✅ Firebase inicializado');
       
-      // Inicializar FCM
+      _firebaseMessaging = FirebaseMessaging.instance;
       await _initializeFCM();
+      print('✅ FCM inicializado');
     } catch (e) {
-      print('❌ Erro ao inicializar Firebase: $e');
+      if (e.toString().contains('duplicate-app')) {
+        print('⚠️ Firebase já inicializado, usando instância existente');
+        _firebaseMessaging = FirebaseMessaging.instance;
+        await _initializeFCM();
+        print('✅ FCM inicializado');
+      } else {
+        print('❌ Erro ao inicializar Firebase: $e');
+        return;
+      }
     }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -220,7 +236,7 @@ class NotificationService {
   static Future<void> _initializeFCM() async {
     try {
       // Solicitar permissões
-      NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      NotificationSettings settings = await _firebaseMessaging!.requestPermission(
         alert: true,
         announcement: false,
         badge: true,
@@ -238,8 +254,15 @@ class NotificationService {
       }
       
       // Obter token FCM
-      _fcmToken = await _firebaseMessaging.getToken();
-      print('🔥 Token FCM: $_fcmToken');
+      _fcmToken = await _firebaseMessaging!.getToken();
+      
+      // Se não conseguir token (simulador iOS), criar um para desenvolvimento
+      if (_fcmToken == null) {
+        _fcmToken = 'DEV_TOKEN_iOS_${DateTime.now().millisecondsSinceEpoch}';
+        print('⚠️ Token FCM de desenvolvimento: $_fcmToken');
+      } else {
+        print('🔥 Token FCM real: $_fcmToken');
+      }
       
       // Configurar handlers de mensagens
       _setupFCMHandlers();
@@ -347,6 +370,6 @@ class NotificationService {
 // Handler para mensagens em background (deve ser função top-level)
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Firebase já está inicializado no main()
   print('📱 FCM Background: ${message.notification?.title}');
 }

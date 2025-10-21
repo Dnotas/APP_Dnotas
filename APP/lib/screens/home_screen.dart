@@ -5,6 +5,7 @@ import '../utils/app_theme.dart';
 import 'reports_screen.dart';
 import 'chat_screen.dart';
 import 'financial_screen.dart';
+import 'boletos_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const ChatScreen(),
     const RequestNFScreen(),
     const ReportsScreen(),
+    const BoletosScreen(),
     const FinancialScreen(),
     const SettingsScreen(),
   ];
@@ -91,6 +93,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.folder_outlined),
             label: 'Relatórios',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance),
+            label: 'Boletos',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet_outlined),
