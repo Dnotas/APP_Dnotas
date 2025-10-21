@@ -37,8 +37,8 @@ dependencies:
   # State Management
   provider: ^6.1.2
   
-  # Supabase
-  supabase_flutter: ^2.8.0
+  # Supabase (versão sem app_links)
+  supabase_flutter: 1.10.25
   
   # Networking
   http: ^1.2.1

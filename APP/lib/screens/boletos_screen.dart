@@ -40,7 +40,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
     
     try {
       final authProvider = context.read<AuthProvider>();
-      final document = _selectedFilial ?? authProvider.user?.cnpj ?? '';
+      final document = _selectedFilial ?? authProvider.currentUser?.cnpj ?? '';
       
       if (document.isNotEmpty) {
         final boletos = await AsaasService.getBoletosByDocument(document);
@@ -73,7 +73,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
     
     try {
       final authProvider = context.read<AuthProvider>();
-      final document = _selectedFilial ?? authProvider.user?.cnpj ?? '';
+      final document = _selectedFilial ?? authProvider.currentUser?.cnpj ?? '';
       
       if (document.isNotEmpty) {
         // Força busca da API ignorando cache
@@ -179,7 +179,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
   Widget _buildFilialSelector() {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        final user = authProvider.user;
+        final user = authProvider.currentUser;
         if (user?.filiais == null || user!.filiais!.isEmpty) {
           return const SizedBox.shrink();
         }

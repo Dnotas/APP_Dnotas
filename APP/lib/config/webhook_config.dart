@@ -1,15 +1,14 @@
 /// Configurações de webhook para o ambiente
 class WebhookConfig {
   // URLs do webhook para diferentes ambientes
-  static const String _prodWebhookUrl = 'https://sua-api-real.com/api/webhook/asaas';
-  static const String _devWebhookUrl = 'https://sua-api-dev.com/api/webhook/asaas';
+  static const String _prodWebhookUrl = 'https://api.dnotas.com.br:9999/api/webhook/asaas';
+  static const String _devWebhookUrl = 'https://api.dnotas.com.br:9999/api/webhook/asaas';
   static const String _localWebhookUrl = 'http://localhost:9999/api/webhook/asaas';
 
   /// Retorna a URL do webhook baseada no ambiente
   static String get webhookUrl {
-    // Por enquanto, usar URL de desenvolvimento
-    // Em produção, trocar para _prodWebhookUrl
-    return _devWebhookUrl;
+    // Usando URL de produção
+    return _prodWebhookUrl;
   }
 
   /// Configurações específicas do webhook
@@ -40,9 +39,10 @@ class WebhookConfig {
 
   /// Verificar se é ambiente de desenvolvimento
   static bool get isDev {
-    // Implementar lógica para detectar ambiente
-    // Por exemplo, baseado em variável de ambiente ou build mode
-    return true; // Temporário
+    // Detecta se é debug mode
+    bool isDebug = false;
+    assert(isDebug = true);
+    return isDebug;
   }
 
   /// Verificar se é ambiente de produção

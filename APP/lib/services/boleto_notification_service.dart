@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/boleto.dart';
@@ -310,8 +311,8 @@ class BoletoNotificationService {
           'weekly_summary',
           'Resumo Semanal',
           channelDescription: 'Resumo semanal de boletos',
-          importance: Importance.default,
-          priority: Priority.default,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
           color: Color(0xFF8B5CF6),
         );
 
