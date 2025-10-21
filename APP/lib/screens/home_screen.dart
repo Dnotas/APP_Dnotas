@@ -4,7 +4,6 @@ import '../providers/auth_provider.dart';
 import '../utils/app_theme.dart';
 import 'reports_screen.dart';
 import 'chat_screen.dart';
-import 'financial_screen.dart';
 import 'boletos_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,7 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
     const RequestNFScreen(),
     const ReportsScreen(),
     const BoletosScreen(),
-    const FinancialScreen(),
     const SettingsScreen(),
   ];
 
@@ -95,12 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Relatórios',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance),
+            icon: Icon(Icons.account_balance_wallet),
             label: 'Boletos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            label: 'Financeiro',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),

@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const admin = require('firebase-admin');
+const webhookRoutes = require('../routes/webhook');
 require('dotenv').config();
 
 const app = express();
@@ -58,6 +59,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Rotas do webhook
+app.use('/api/webhook', webhookRoutes);
 
 // Middleware de log simples
 app.use((req, res, next) => {
@@ -519,6 +523,8 @@ app.post('/api/fcm/register', async (req, res) => {
     });
 
     console.log(`📱 Token FCM registrado para CNPJ: ${cnpj} (${platform})`);
+    console.log(`🔥 Token: ${fcm_token.substring(0, 20)}...`);
+    console.log(`📊 Total tokens registrados: ${fcmTokens.size}`);
 
     res.json({
       success: true,
@@ -537,12 +543,19 @@ app.post('/api/fcm/register', async (req, res) => {
 // Função para enviar notificação push REAL usando Firebase Admin SDK
 async function sendPushNotification(cnpj, title, body, data = {}) {
   try {
+    console.log(`🚀 Tentando enviar notificação para CNPJ: ${cnpj}`);
+    console.log(`📋 Tokens disponíveis: ${Array.from(fcmTokens.keys()).join(', ')}`);
+    
     const tokenInfo = fcmTokens.get(cnpj);
     
     if (!tokenInfo) {
       console.log(`❌ Token FCM não encontrado para CNPJ: ${cnpj}`);
+      console.log(`📊 Total tokens registrados: ${fcmTokens.size}`);
       return false;
     }
+    
+    console.log(`✅ Token encontrado para CNPJ: ${cnpj}`);
+    console.log(`🔥 Token: ${tokenInfo.token.substring(0, 20)}...`);
 
     // Converter data para strings (FCM exige)
     const stringData = {};
