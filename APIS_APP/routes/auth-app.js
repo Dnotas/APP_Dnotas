@@ -228,4 +228,70 @@ router.put('/profile/:cnpj', async (req, res) => {
     }
 });
 
+// GET /api/auth-app/debug/:cnpj - Debug das filiais
+router.get('/debug/:cnpj', async (req, res) => {
+    try {
+        const { cnpj } = req.params;
+        const cleanCnpj = cnpj.replace(/[^\d]/g, '');
+        
+        console.log(`🔍 DEBUG Filiais: ${cleanCnpj}`);
+        
+        // 1. Verificar se cliente existe
+        const { data: cliente, error: clienteError } = await supabase
+            .from('clientes')
+            .select('*')
+            .eq('cnpj', cleanCnpj)
+            .single();
+            
+        if (clienteError) {
+            return res.json({
+                success: false,
+                error: 'Cliente não encontrado',
+                cnpj: cleanCnpj,
+                cliente: null,
+                filiais_function: null,
+                filiais_table: null
+            });
+        }
+        
+        // 2. Testar função get_all_client_cnpjs
+        const { data: filiaisFunction, error: functionError } = await supabase
+            .rpc('get_all_client_cnpjs', { p_matriz_cnpj: cleanCnpj });
+            
+        // 3. Verificar tabela client_filiais diretamente
+        const { data: filiaisTable, error: tableError } = await supabase
+            .from('client_filiais')
+            .select('*')
+            .eq('matriz_cnpj', cleanCnpj)
+            .eq('is_active', true);
+        
+        res.json({
+            success: true,
+            cnpj: cleanCnpj,
+            cliente: cliente,
+            filiais_function: {
+                data: filiaisFunction,
+                error: functionError?.message
+            },
+            filiais_table: {
+                data: filiaisTable,
+                error: tableError?.message
+            },
+            debug_info: {
+                total_filiais_function: filiaisFunction?.length || 0,
+                total_filiais_table: filiaisTable?.length || 0,
+                apenas_filiais: filiaisFunction?.filter(f => f.tipo === 'filial') || []
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro no debug:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erro interno do servidor',
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;
