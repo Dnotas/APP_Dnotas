@@ -16,12 +16,12 @@ CREATE TABLE IF NOT EXISTS client_filiais (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
     -- Garantir que filial não seja igual à matriz
-    CONSTRAINT chk_filial_diferente_matriz CHECK (matriz_cnpj != filial_cnpj),
-    
-    -- Índice para busca rápida
-    INDEX idx_client_filiais_matriz (matriz_cnpj),
-    INDEX idx_client_filiais_cnpj (filial_cnpj)
+    CONSTRAINT chk_filial_diferente_matriz CHECK (matriz_cnpj != filial_cnpj)
 );
+
+-- Índices para busca rápida
+CREATE INDEX IF NOT EXISTS idx_client_filiais_matriz ON client_filiais(matriz_cnpj);
+CREATE INDEX IF NOT EXISTS idx_client_filiais_cnpj ON client_filiais(filial_cnpj);
 
 -- Trigger para atualizar updated_at
 CREATE TRIGGER update_client_filiais_updated_at 
