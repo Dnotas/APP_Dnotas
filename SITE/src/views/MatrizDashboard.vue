@@ -340,7 +340,7 @@
                       </div>
                       
                       <div class="flex items-end">
-                        <button type="button" @click="removerFilial(index)"
+                        <button type="button" @click="removerFilialFormulario(index)"
                                 class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg">
                           Remover
                         </button>
@@ -970,7 +970,7 @@ const adicionarFilial = () => {
 }
 
 // Remover filial do formulário
-const removerFilial = (index) => {
+const removerFilialFormulario = (index) => {
   novoCliente.value.filiais.splice(index, 1)
 }
 
