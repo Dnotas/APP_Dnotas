@@ -79,9 +79,18 @@
                         {{ client.last_login ? formatDate(client.last_login) : 'Nunca' }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button class="text-primary-600 hover:text-primary-900">
-                          Editar
-                        </button>
+                        <div class="flex items-center justify-end space-x-3">
+                          <button 
+                            @click="abrirFiliaisModal(client)"
+                            class="text-blue-600 hover:text-blue-900"
+                            title="Gerenciar Filiais"
+                          >
+                            Filiais
+                          </button>
+                          <button class="text-primary-600 hover:text-primary-900">
+                            Editar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -92,6 +101,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Filiais -->
+    <FiliaisModal
+      :is-open="filiaisModalOpen"
+      :cliente="clienteSelecionado"
+      @close="fecharFiliaisModal"
+      @updated="loadClients"
+    />
   </AppLayout>
 </template>
 
@@ -100,12 +117,17 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { apiService } from '@/services/api'
 import AppLayout from '@/components/AppLayout.vue'
+import FiliaisModal from '@/components/FiliaisModal.vue'
 import type { Client } from '@/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 const authStore = useAuthStore()
 const clients = ref<Client[]>([])
+
+// Estado do modal de filiais
+const filiaisModalOpen = ref(false)
+const clienteSelecionado = ref<Client>({} as Client)
 
 const formatCnpj = (cnpj: string) => {
   return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
@@ -121,6 +143,17 @@ const loadClients = async () => {
   } catch (error) {
     console.error('Erro ao carregar clientes:', error)
   }
+}
+
+// Métodos do modal de filiais
+const abrirFiliaisModal = (client: Client) => {
+  clienteSelecionado.value = client
+  filiaisModalOpen.value = true
+}
+
+const fecharFiliaisModal = () => {
+  filiaisModalOpen.value = false
+  clienteSelecionado.value = {} as Client
 }
 
 onMounted(() => {

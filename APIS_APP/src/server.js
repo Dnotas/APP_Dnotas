@@ -7,6 +7,7 @@ const { createClient } = require('@supabase/supabase-js');
 const admin = require('firebase-admin');
 const webhookRoutes = require('../routes/webhook');
 const clientFiliaisRoutes = require('../routes/client-filiais');
+const authAppRoutes = require('../routes/auth-app');
 require('dotenv').config();
 
 const app = express();
@@ -66,6 +67,9 @@ app.use('/api/webhook', webhookRoutes);
 
 // Rotas das filiais dos clientes
 app.use('/api/client-filiais', clientFiliaisRoutes);
+
+// Rotas de autenticação do app
+app.use('/api/auth-app', authAppRoutes);
 
 // Middleware de log simples
 app.use((req, res, next) => {

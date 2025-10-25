@@ -67,3 +67,16 @@ export interface DashboardStats {
   daily_messages: number
   response_time_avg: number
 }
+
+export interface ClientFilial {
+  id: string
+  matriz_cnpj: string
+  filial_cnpj: string
+  filial_nome: string
+  endereco?: string
+  telefone?: string
+  email?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
