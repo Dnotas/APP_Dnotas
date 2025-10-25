@@ -5,13 +5,13 @@
 -- Tabela para filiais dos clientes
 CREATE TABLE IF NOT EXISTS client_filiais (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    matriz_cnpj VARCHAR(14) NOT NULL REFERENCES users(cnpj) ON DELETE CASCADE,
+    matriz_cnpj VARCHAR(14) NOT NULL REFERENCES clientes(cnpj) ON DELETE CASCADE,
     filial_cnpj VARCHAR(14) UNIQUE NOT NULL,
     filial_nome VARCHAR(100) NOT NULL,
     endereco TEXT,
     telefone VARCHAR(20),
     email VARCHAR(100),
-    ativo BOOLEAN DEFAULT true NOT NULL,
+    is_active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
@@ -40,12 +40,12 @@ BEGIN
     RETURN QUERY
     -- Matriz
     SELECT 
-        u.cnpj,
-        u.nome as nome,
+        c.cnpj,
+        c.nome_empresa as nome,
         'matriz'::VARCHAR(10) as tipo,
-        u.ativo
-    FROM users u 
-    WHERE u.cnpj = p_matriz_cnpj
+        c.is_active as ativo
+    FROM clientes c 
+    WHERE c.cnpj = p_matriz_cnpj
     
     UNION ALL
     
@@ -54,18 +54,18 @@ BEGIN
         cf.filial_cnpj as cnpj,
         cf.filial_nome as nome,
         'filial'::VARCHAR(10) as tipo,
-        cf.ativo
+        cf.is_active as ativo
     FROM client_filiais cf 
     WHERE cf.matriz_cnpj = p_matriz_cnpj 
-    AND cf.ativo = true;
+    AND cf.is_active = true;
 END;
 $$ LANGUAGE plpgsql;
 
 -- View para facilitar consultas
 CREATE OR REPLACE VIEW v_clients_with_filiais AS
 SELECT 
-    u.cnpj as matriz_cnpj,
-    u.nome as matriz_nome,
+    c.cnpj as matriz_cnpj,
+    c.nome_empresa as matriz_nome,
     json_agg(
         json_build_object(
             'cnpj', all_cnpjs.cnpj,
@@ -74,18 +74,18 @@ SELECT
             'ativo', all_cnpjs.ativo
         )
     ) as filiais
-FROM users u
-LEFT JOIN get_all_client_cnpjs(u.cnpj) all_cnpjs ON true
-GROUP BY u.cnpj, u.nome;
+FROM clientes c
+LEFT JOIN get_all_client_cnpjs(c.cnpj) all_cnpjs ON true
+GROUP BY c.cnpj, c.nome_empresa;
 
 -- Comentários
 COMMENT ON TABLE client_filiais IS 'Filiais dos clientes - CNPJs adicionais que cada cliente pode ter';
 COMMENT ON FUNCTION get_all_client_cnpjs IS 'Retorna matriz + todas as filiais de um cliente';
 
--- Log da migração
-INSERT INTO schema_migrations (version, description, executed_at) 
-VALUES ('2024102501', 'Add client filiais system', CURRENT_TIMESTAMP)
-ON CONFLICT (version) DO NOTHING;
+-- Log da migração (opcional - só se existir tabela schema_migrations)
+-- INSERT INTO schema_migrations (version, description, executed_at) 
+-- VALUES ('2024102501', 'Add client filiais system', CURRENT_TIMESTAMP)
+-- ON CONFLICT (version) DO NOTHING;
 
 -- Dados de exemplo (opcional - só para teste)
 /*
