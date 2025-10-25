@@ -306,8 +306,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -441,7 +440,6 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
             ],
           ),
         ),
-      ),
     );
   }
 
