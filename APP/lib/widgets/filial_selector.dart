@@ -11,10 +11,13 @@ class FilialSelector extends StatelessWidget {
       builder: (context, authProvider, child) {
         final user = authProvider.currentUser;
         
-        // Se não tem filiais, não mostra o seletor
-        if (user?.filiais == null || user!.filiais!.isEmpty) {
+        // Sempre mostra o seletor (mesmo sem filiais para teste)
+        if (user == null) {
           return const SizedBox.shrink();
         }
+        
+        // Se não tem filiais, mostra apenas como indicativo visual
+        final hasFiliais = user.filiais != null && user.filiais!.isNotEmpty;
 
         return PopupMenuButton<String>(
           icon: Container(
@@ -44,17 +47,30 @@ class FilialSelector extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 2),
-                const Icon(
-                  Icons.keyboard_arrow_down,
+                Icon(
+                  hasFiliais ? Icons.keyboard_arrow_down : Icons.info_outline,
                   color: Colors.white,
                   size: 14,
                 ),
               ],
             ),
           ),
+          enabled: true, // Sempre habilitado para debug
           tooltip: 'Trocar entre Matriz e Filiais',
           offset: const Offset(0, 40),
           onSelected: (value) {
+            if (value == 'debug') {
+              // Mostrar debug das filiais
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Debug: ${user.filiais?.length ?? 0} filiais carregadas\nFiliais: ${user.filiais?.toString() ?? "null"}'),
+                  backgroundColor: Colors.blue,
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+              return;
+            }
+            
             if (value == 'matriz') {
               authProvider.selectFilial(null);
             } else {
@@ -114,7 +130,7 @@ class FilialSelector extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            user.nomeEmpresa,
+                            user.nomeEmpresa ?? 'Empresa',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -135,11 +151,12 @@ class FilialSelector extends StatelessWidget {
               ),
             ),
             
-            // Divisor
-            const PopupMenuDivider(),
-            
-            // Opções de Filiais
-            ...user.filiais!.map<PopupMenuEntry<String>>((filial) {
+            // Se tem filiais, mostra divisor e filiais
+            if (hasFiliais) ...[
+              const PopupMenuDivider(),
+              
+              // Opções de Filiais
+              ...user.filiais!.map<PopupMenuEntry<String>>((filial) {
               final isSelected = authProvider.selectedFilial != null && 
                                 authProvider.selectedFilial!['cnpj'] == filial['cnpj'];
               
@@ -197,6 +214,31 @@ class FilialSelector extends StatelessWidget {
                 ),
               );
             }).toList(),
+            ],
+            
+            // Se não tem filiais, mostra opção informativa
+            if (!hasFiliais)
+              PopupMenuItem(
+                value: 'debug',
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info, color: Colors.grey, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Nenhuma filial cadastrada',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         );
       },

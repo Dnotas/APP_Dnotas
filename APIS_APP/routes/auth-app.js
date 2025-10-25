@@ -67,7 +67,7 @@ router.post('/login', async (req, res) => {
         const userData = {
             id: user.id,
             cnpj: user.cnpj,
-            nome: user.nome,
+            nome_empresa: user.nome_empresa || user.nome, // Garantir campo correto
             email: user.email,
             telefone: user.telefone,
             filial_id: user.filial_id,
