@@ -417,3 +417,16 @@ Android/
 
 *Desenvolvido com ❤️ por Claude Code*  
 *Data: 21/10/2024*
+
+
+
+
+
+
+
+
+tokin assas
+noem : 
+teste2
+token:
+$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjA5NDRiYTFhLTFlMTgtNDc0OC1iNmQwLWJhNzk5ZWU3ZmRlNDo6JGFhY2hfNTA5YTI4YmMtZjZmZC00YWNjLTgxM2UtODdhNDc0OGQ1MWNk

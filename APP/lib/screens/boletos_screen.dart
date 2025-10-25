@@ -109,6 +109,35 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
     }
   }
 
+  Future<void> _testApiWithYourKey() async {
+    try {
+      print('🧪 INICIANDO TESTE COM SUA CHAVE...');
+      
+      // Primeiro, lista todos os clientes da sua conta
+      await AsaasService.testListCustomers();
+      
+      // Depois tenta buscar boletos para um documento específico
+      // CNPJ da AM CONTABILIDADE LTDA que existe na sua conta Asaas
+      final testDocument = '24831337000109';
+      final boletos = await AsaasService.testGetBoletosByDocument(testDocument);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Teste concluído! ${boletos.length} boletos encontrados. Veja o console.'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    } catch (e) {
+      print('🧪 ERRO NO TESTE: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro no teste: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,9 +305,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
       color: const Color(0xFF2D2D2D),
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () => _showBoletoDetails(boleto),
-        borderRadius: BorderRadius.circular(12),
+      child: Padding(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -324,33 +351,75 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
                 ),
                 const SizedBox(height: 8),
               ],
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.calendar_today, color: Colors.grey, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Vence em: ${boleto.dueDateFormatted}',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                    if (boleto.status == 'PENDING') ...[
+                      const SizedBox(width: 8),
+                      if (boleto.isOverdue)
+                        const Text(
+                          'VENCIDO',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      else if (boleto.isNearDue)
+                        Text(
+                          '${boleto.daysToDue} dias',
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: Colors.grey, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Vence em: ${boleto.dueDateFormatted}',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  if (boleto.status == 'PENDING') ...[
-                    const Spacer(),
-                    if (boleto.isOverdue)
-                      const Text(
-                        'VENCIDO',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    else if (boleto.isNearDue)
-                      Text(
-                        '${boleto.daysToDue} dias',
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontWeight: FontWeight.bold,
+                  if (boleto.bankSlipUrl != null)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _launchUrl(boleto.bankSlipUrl!),
+                        icon: const Icon(Icons.download, size: 16),
+                        label: const Text('Baixar Boleto'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B5CF6),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                       ),
-                  ],
+                    ),
+                  if (boleto.bankSlipUrl != null && boleto.invoiceUrl != null)
+                    const SizedBox(width: 8),
+                  if (boleto.invoiceUrl != null)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _launchUrl(boleto.invoiceUrl!),
+                        icon: const Icon(Icons.receipt, size: 16),
+                        label: const Text('Ver Fatura'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
                 ],
               ),
               if (boleto.customerName != null) ...[
