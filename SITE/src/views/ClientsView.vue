@@ -12,6 +12,7 @@
           <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
             <button
               type="button"
+              @click="abrirNovoClienteModal"
               class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:w-auto"
             >
               Novo Cliente
@@ -87,7 +88,10 @@
                           >
                             Filiais
                           </button>
-                          <button class="text-primary-600 hover:text-primary-900">
+                          <button 
+                            @click="abrirEditarClienteModal(client)"
+                            class="text-primary-600 hover:text-primary-900"
+                          >
                             Editar
                           </button>
                         </div>
@@ -109,6 +113,14 @@
       @close="fecharFiliaisModal"
       @updated="loadClients"
     />
+
+    <!-- Modal de Cliente (Criar/Editar) -->
+    <ClienteModal
+      :is-open="clienteModalOpen"
+      :cliente="clienteParaEdicao"
+      @close="fecharClienteModal"
+      @saved="handleClienteSalvo"
+    />
   </AppLayout>
 </template>
 
@@ -118,6 +130,7 @@ import { useAuthStore } from '@/stores/auth'
 import { apiService } from '@/services/api'
 import AppLayout from '@/components/AppLayout.vue'
 import FiliaisModal from '@/components/FiliaisModal.vue'
+import ClienteModal from '@/components/ClienteModal.vue'
 import type { Client } from '@/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -128,6 +141,10 @@ const clients = ref<Client[]>([])
 // Estado do modal de filiais
 const filiaisModalOpen = ref(false)
 const clienteSelecionado = ref<Client>({} as Client)
+
+// Estado do modal de cliente
+const clienteModalOpen = ref(false)
+const clienteParaEdicao = ref<Client | null>(null)
 
 const formatCnpj = (cnpj: string) => {
   return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
@@ -154,6 +171,27 @@ const abrirFiliaisModal = (client: Client) => {
 const fecharFiliaisModal = () => {
   filiaisModalOpen.value = false
   clienteSelecionado.value = {} as Client
+}
+
+// Métodos do modal de cliente
+const abrirNovoClienteModal = () => {
+  clienteParaEdicao.value = null
+  clienteModalOpen.value = true
+}
+
+const abrirEditarClienteModal = (client: Client) => {
+  clienteParaEdicao.value = client
+  clienteModalOpen.value = true
+}
+
+const fecharClienteModal = () => {
+  clienteModalOpen.value = false
+  clienteParaEdicao.value = null
+}
+
+const handleClienteSalvo = () => {
+  loadClients()
+  fecharClienteModal()
 }
 
 onMounted(() => {
