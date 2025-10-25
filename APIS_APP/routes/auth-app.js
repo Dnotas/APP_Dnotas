@@ -50,12 +50,22 @@ router.post('/login', async (req, res) => {
         }
         
         // Buscar filiais do cliente usando a função criada
-        const { data: filiais, error: filiaisError } = await supabase
+        const { data: allCnpjs, error: filiaisError } = await supabase
             .rpc('get_all_client_cnpjs', { p_matriz_cnpj: cleanCnpj });
             
         if (filiaisError) {
             console.error('❌ Erro ao buscar filiais:', filiaisError);
         }
+        
+        // Filtrar apenas as filiais (não incluir a matriz) e mapear para formato correto
+        const filiais = allCnpjs 
+            ? allCnpjs
+                .filter(item => item.tipo === 'filial')
+                .map(filial => ({
+                    cnpj: filial.cnpj,
+                    nome: filial.nome
+                }))
+            : [];
         
         // Atualizar último login
         await supabase
@@ -77,6 +87,7 @@ router.post('/login', async (req, res) => {
         };
         
         console.log(`✅ Login APP sucesso: ${cleanCnpj} (${filiais?.length || 0} filiais)`);
+        console.log(`📋 Filiais encontradas:`, filiais);
         
         res.json({
             success: true,
