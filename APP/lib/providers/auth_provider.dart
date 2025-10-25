@@ -13,12 +13,30 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = true;
   String? _errorMessage;
   String? _authToken;
+  Map<String, dynamic>? _selectedFilial;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _currentUser != null;
   String? get errorMessage => _errorMessage;
   String? get token => _authToken ?? Supabase.instance.client.auth.currentSession?.accessToken;
+  Map<String, dynamic>? get selectedFilial => _selectedFilial;
+  
+  /// Retorna o CNPJ atual (matriz ou filial selecionada)
+  String? get currentCnpj {
+    if (_selectedFilial != null) {
+      return _selectedFilial!['cnpj'];
+    }
+    return _currentUser?.cnpj;
+  }
+  
+  /// Retorna o nome da empresa atual (matriz ou filial selecionada)
+  String? get currentCompanyName {
+    if (_selectedFilial != null) {
+      return _selectedFilial!['nome'];
+    }
+    return _currentUser?.nomeEmpresa;
+  }
 
   AuthProvider() {
     _initialize();
@@ -236,5 +254,21 @@ class AuthProvider with ChangeNotifier {
     }
     
     return false;
+  }
+
+  /// Selecionar filial ativa (null = matriz)
+  void selectFilial(Map<String, dynamic>? filial) {
+    _selectedFilial = filial;
+    notifyListeners();
+    
+    // Reinicializar notificações de boletos com o novo CNPJ
+    if (currentCnpj != null) {
+      _initializeBoletoNotifications(currentCnpj!);
+    }
+  }
+
+  /// Resetar seleção para matriz
+  void selectMatriz() {
+    selectFilial(null);
   }
 }

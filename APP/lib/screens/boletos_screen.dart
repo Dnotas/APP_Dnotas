@@ -20,7 +20,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
   List<Boleto> _overdueBoletos = [];
   List<Boleto> _paidBoletos = [];
   bool _isLoading = true;
-  String? _selectedFilial;
+  String? _currentCnpj;
 
   @override
   void initState() {
@@ -40,7 +40,10 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
     
     try {
       final authProvider = context.read<AuthProvider>();
-      final document = _selectedFilial ?? authProvider.currentUser?.cnpj ?? '';
+      final document = authProvider.currentCnpj ?? '';
+      
+      // Atualizar CNPJ atual para detectar mudanças
+      _currentCnpj = document;
       
       if (document.isNotEmpty) {
         final boletos = await AsaasService.getBoletosByDocument(document);
@@ -57,14 +60,18 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao carregar boletos: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar boletos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -73,7 +80,7 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
     
     try {
       final authProvider = context.read<AuthProvider>();
-      final document = _selectedFilial ?? authProvider.currentUser?.cnpj ?? '';
+      final document = authProvider.currentCnpj ?? '';
       
       if (document.isNotEmpty) {
         // Força busca da API ignorando cache
@@ -140,128 +147,79 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text(
-          'Boletos',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          // Seletor de filiais estilo Nubank
-          _buildFilialSelector(),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _forceRefresh,
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF8B5CF6),
-          tabs: [
-            Tab(
-              text: 'Pendentes',
-              icon: Badge(
-                label: Text('${_pendingBoletos.length}'),
-                child: const Icon(Icons.schedule),
-              ),
-            ),
-            Tab(
-              text: 'Vencidos',
-              icon: Badge(
-                label: Text('${_overdueBoletos.length}'),
-                backgroundColor: Colors.red,
-                child: const Icon(Icons.warning),
-              ),
-            ),
-            Tab(
-              text: 'Pagos',
-              icon: Badge(
-                label: Text('${_paidBoletos.length}'),
-                backgroundColor: Colors.green,
-                child: const Icon(Icons.check_circle),
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
-              ),
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildBoletosList(_pendingBoletos, 'Nenhum boleto pendente'),
-                _buildBoletosList(_overdueBoletos, 'Nenhum boleto vencido'),
-                _buildBoletosList(_paidBoletos, 'Nenhum boleto pago'),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildFilialSelector() {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        final user = authProvider.currentUser;
-        if (user?.filiais == null || user!.filiais!.isEmpty) {
-          return const SizedBox.shrink();
+        // Verificar se o CNPJ mudou e recarregar se necessário
+        final currentDocument = authProvider.currentCnpj ?? '';
+        if (_currentCnpj != currentDocument && currentDocument.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _loadBoletos());
         }
-
-        return PopupMenuButton<String>(
-          icon: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white),
-              borderRadius: BorderRadius.circular(20),
+        
+        return Scaffold(
+          backgroundColor: const Color(0xFF1A1A1A),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF1A1A1A),
+            title: const Text(
+              'Boletos',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _selectedFilial != null 
-                    ? 'Filial' 
-                    : 'Matriz',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: _forceRefresh,
+              ),
+            ],
+            bottom: TabBar(
+              controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: const Color(0xFF8B5CF6),
+              tabs: [
+                Tab(
+                  text: 'Pendentes',
+                  icon: Badge(
+                    label: Text('${_pendingBoletos.length}'),
+                    child: const Icon(Icons.schedule),
+                  ),
                 ),
-                const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 16),
+                Tab(
+                  text: 'Vencidos',
+                  icon: Badge(
+                    label: Text('${_overdueBoletos.length}'),
+                    backgroundColor: Colors.red,
+                    child: const Icon(Icons.warning),
+                  ),
+                ),
+                Tab(
+                  text: 'Pagos',
+                  icon: Badge(
+                    label: Text('${_paidBoletos.length}'),
+                    backgroundColor: Colors.green,
+                    child: const Icon(Icons.check_circle),
+                  ),
+                ),
               ],
             ),
           ),
-          onSelected: (value) {
-            setState(() {
-              _selectedFilial = value == 'matriz' ? null : value;
-            });
-            _loadBoletos();
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'matriz',
-              child: ListTile(
-                leading: Icon(Icons.business),
-                title: Text('Matriz'),
-                dense: true,
-              ),
-            ),
-            ...user.filiais!.map((filial) => PopupMenuItem(
-              value: filial['cnpj'],
-              child: ListTile(
-                leading: const Icon(Icons.store),
-                title: Text(filial['nome'] ?? 'Filial'),
-                subtitle: Text(filial['cnpj'] ?? ''),
-                dense: true,
-              ),
-            )),
-          ],
+          body: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                  ),
+                )
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildBoletosList(_pendingBoletos, 'Nenhum boleto pendente'),
+                    _buildBoletosList(_overdueBoletos, 'Nenhum boleto vencido'),
+                    _buildBoletosList(_paidBoletos, 'Nenhum boleto pago'),
+                  ],
+                ),
         );
       },
     );
   }
+
 
   Widget _buildBoletosList(List<Boleto> boletos, String emptyMessage) {
     if (boletos.isEmpty) {

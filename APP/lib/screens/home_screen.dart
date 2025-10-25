@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_theme.dart';
+import '../widgets/filial_selector.dart';
 import 'reports_screen.dart';
 import 'chat_screen.dart';
 import 'boletos_screen.dart';
@@ -46,22 +47,29 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user?.nomeEmpresa ?? 'DNOTAS',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'CNPJ: ${_formatCnpj(user?.cnpj ?? '')}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    authProvider.currentCompanyName ?? 'DNOTAS',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    'CNPJ: ${_formatCnpj(authProvider.currentCnpj ?? '')}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
+          // Seletor de filiais
+          const FilialSelector(),
+          const SizedBox(width: 8),
+          // Ícone de notificações
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
