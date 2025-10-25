@@ -244,46 +244,120 @@
           </div>
         </div>
 
-        <!-- Modal Novo Cliente -->
-        <div v-if="showNovoCliente" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md border border-gray-800">
-            <h3 class="text-xl font-bold text-white mb-4">Novo Cliente</h3>
+        <!-- Modal Cliente (Criar/Editar) -->
+        <div v-if="showNovoCliente || clienteEditando" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-gray-900 rounded-xl p-6 w-full max-w-2xl border border-gray-800 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-xl font-bold text-white">
+                {{ clienteEditando ? 'Editar Cliente' : 'Novo Cliente' }}
+              </h3>
+              <button @click="fecharModalCliente" class="text-gray-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
             
             <form @submit.prevent="salvarCliente">
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">Nome da Empresa</label>
-                  <input v-model="novoCliente.nome" type="text" required 
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+              <!-- Dados Básicos -->
+              <div class="space-y-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="md:col-span-2">
+                    <label class="block text-gray-400 text-sm mb-2">Nome da Empresa *</label>
+                    <input v-model="novoCliente.nome" type="text" required 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-gray-400 text-sm mb-2">CNPJ *</label>
+                    <input v-model="novoCliente.cnpj" 
+                           type="text" 
+                           required
+                           placeholder="00.000.000/0000-00"
+                           maxlength="18"
+                           @input="formatarCNPJ"
+                           :disabled="!!clienteEditando"
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white disabled:opacity-50">
+                    <p v-if="clienteEditando" class="text-xs text-gray-500 mt-1">CNPJ não pode ser alterado</p>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-gray-400 text-sm mb-2">Email</label>
+                    <input v-model="novoCliente.email" type="email" 
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-gray-400 text-sm mb-2">Telefone</label>
+                    <input v-model="novoCliente.telefone" type="text" 
+                           placeholder="(11) 99999-9999"
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                  </div>
+                  
+                  <div>
+                    <label class="block text-gray-400 text-sm mb-2">Senha {{ clienteEditando ? '' : '*' }}</label>
+                    <input v-model="novoCliente.senha" type="password" 
+                           :required="!clienteEditando"
+                           :placeholder="clienteEditando ? 'Deixe em branco para manter a atual' : 'Digite a senha'"
+                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                  </div>
                 </div>
-                
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">CNPJ</label>
-                  <input v-model="novoCliente.cnpj" 
-                         type="text" 
-                         required
-                         placeholder="00.000.000/0000-00"
-                         maxlength="18"
-                         @input="formatarCNPJ"
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+              </div>
+
+              <!-- Seção de Filiais -->
+              <div class="border-t border-gray-700 pt-6">
+                <div class="flex justify-between items-center mb-4">
+                  <h4 class="text-lg font-medium text-white">Filiais</h4>
+                  <button type="button" @click="adicionarFilial" 
+                          class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                    + Adicionar Filial
+                  </button>
                 </div>
-                
-                <div>
-                  <label class="block text-gray-400 text-sm mb-2">Senha</label>
-                  <input v-model="novoCliente.senha" type="password" required 
-                         placeholder="Digite a senha do cliente"
-                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+
+                <div v-if="novoCliente.filiais.length === 0" class="text-center py-8 bg-gray-800/50 rounded-lg">
+                  <p class="text-gray-400">Nenhuma filial cadastrada</p>
+                  <p class="text-gray-500 text-sm">Clique em "Adicionar Filial" para incluir filiais</p>
+                </div>
+
+                <div v-else class="space-y-4">
+                  <div v-for="(filial, index) in novoCliente.filiais" :key="index" 
+                       class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label class="block text-gray-400 text-sm mb-2">CNPJ da Filial *</label>
+                        <input v-model="filial.cnpj" type="text" required
+                               placeholder="00.000.000/0000-00"
+                               maxlength="18"
+                               @input="formatarCnpjFilial(index, $event)"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                      </div>
+                      
+                      <div>
+                        <label class="block text-gray-400 text-sm mb-2">Nome da Filial *</label>
+                        <input v-model="filial.nome" type="text" required
+                               placeholder="Ex: Filial Shopping"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                      </div>
+                      
+                      <div class="flex items-end">
+                        <button type="button" @click="removerFilial(index)"
+                                class="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg">
+                          Remover
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
-              <div class="flex justify-end space-x-3 mt-6">
-                <button type="button" @click="showNovoCliente = false" 
+              <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-700">
+                <button type="button" @click="fecharModalCliente" 
                         class="px-4 py-2 text-gray-400 hover:text-white transition-colors">
                   Cancelar
                 </button>
                 <button type="submit" :disabled="salvandoCliente"
                         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
-                  {{ salvandoCliente ? 'Salvando...' : 'Salvar' }}
+                  {{ salvandoCliente ? 'Salvando...' : (clienteEditando ? 'Atualizar' : 'Salvar') }}
                 </button>
               </div>
             </form>
@@ -738,8 +812,13 @@ const salvandoFilial = ref(false)
 const novoCliente = ref({
   nome: '',
   cnpj: '',
-  senha: ''
+  email: '',
+  telefone: '',
+  senha: '',
+  filiais: []
 })
+
+const clienteEditando = ref(null)
 
 const novoFuncionario = ref({
   nome: '',
@@ -835,8 +914,9 @@ const salvarCliente = async () => {
     alert('Cliente cadastrado com sucesso!')
     
     // Limpar formulário e fechar modal
-    novoCliente.value = { nome: '', cnpj: '', senha: '' }
+    novoCliente.value = { nome: '', cnpj: '', email: '', telefone: '', senha: '', filiais: [] }
     showNovoCliente.value = false
+    clienteEditando.value = null
     
     // Recarregar listas
     await carregarClientes()
@@ -874,10 +954,60 @@ const removerCliente = async (id) => {
   }
 }
 
-// Editar cliente (placeholder)
-const editarCliente = (cliente) => {
+// Fechar modal de cliente
+const fecharModalCliente = () => {
+  showNovoCliente.value = false
+  clienteEditando.value = null
+  novoCliente.value = { nome: '', cnpj: '', email: '', telefone: '', senha: '', filiais: [] }
+}
+
+// Adicionar filial ao formulário
+const adicionarFilial = () => {
+  novoCliente.value.filiais.push({
+    cnpj: '',
+    nome: ''
+  })
+}
+
+// Remover filial do formulário
+const removerFilial = (index) => {
+  novoCliente.value.filiais.splice(index, 1)
+}
+
+// Formatar CNPJ da filial
+const formatarCnpjFilial = (index, event) => {
+  const input = event.target
+  let value = input.value.replace(/\D/g, '')
+  
+  if (value.length <= 14) {
+    value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+    novoCliente.value.filiais[index].cnpj = value
+  }
+}
+
+// Editar cliente
+const editarCliente = async (cliente) => {
   console.log('Editar cliente:', cliente)
-  // TODO: implementar modal de edição
+  clienteEditando.value = cliente
+  
+  // Preencher formulário com dados do cliente
+  novoCliente.value = {
+    nome: cliente.nome_empresa,
+    cnpj: formatarCNPJExibicao(cliente.cnpj),
+    email: cliente.email || '',
+    telefone: cliente.telefone || '',
+    senha: '',
+    filiais: []
+  }
+  
+  // Buscar filiais do cliente (se houver)
+  try {
+    // TODO: Implementar busca de filiais da API
+    // const filiais = await clientFiliaisService.getFiliais(cliente.cnpj)
+    // novoCliente.value.filiais = filiais.filiais.filter(f => f.tipo === 'filial')
+  } catch (error) {
+    console.error('Erro ao carregar filiais:', error)
+  }
 }
 
 // Formatar data
