@@ -47,6 +47,23 @@ class SupabaseService {
       if (response != null) {
         _currentUserId = response['id'];
         
+        // Buscar filiais do cliente
+        final filiaisResponse = await client
+            .from('client_filiais')
+            .select('filial_cnpj, filial_nome')
+            .eq('matriz_cnpj', cnpjLimpo)
+            .eq('is_active', true);
+        
+        // Adicionar filiais ao response
+        final filiais = filiaisResponse.map((filial) => {
+          'cnpj': filial['filial_cnpj'],
+          'nome': filial['filial_nome'],
+        }).toList();
+        
+        response['filiais'] = filiais;
+        
+        print('✅ Login com ${filiais.length} filiais: $filiais');
+        
         // Atualizar último login (removido por enquanto para evitar erro RLS)
         // await client
         //     .from('clientes')
