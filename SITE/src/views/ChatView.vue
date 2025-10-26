@@ -396,6 +396,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useNotifications } from '@/composables/useNotifications'
 import AppLayout from '@/components/AppLayout.vue'
 import {
   SearchIcon,
@@ -445,8 +446,9 @@ interface Template {
   categoria: string
 }
 
-// Store
+// Store e composables
 const authStore = useAuthStore()
+const { requestPermission, notifyNewMessage, notifyNewConversation, checkSupport } = useNotifications()
 
 // Estado reativo
 const searchQuery = ref('')
@@ -785,14 +787,39 @@ const scrollToBottom = async () => {
 
 // Auto-refresh das conversas
 let intervalId: number | null = null
+let conversasAnteriores: Conversa[] = []
 
 const iniciarAutoRefresh = () => {
-  intervalId = setInterval(() => {
-    carregarConversas()
-    if (conversaSelecionada.value) {
-      carregarMensagens(conversaSelecionada.value.id)
+  intervalId = setInterval(async () => {
+    const conversasAntigas = [...conversas.value]
+    await carregarConversas()
+    
+    // Verificar novas conversas
+    const novasConversas = conversas.value.filter(conv => 
+      !conversasAntigas.find(antiga => antiga.id === conv.id)
+    )
+    
+    // Notificar novas conversas
+    for (const novaConversa of novasConversas) {
+      notifyNewConversation(novaConversa.cliente_nome, novaConversa.titulo)
     }
-  }, 10000) // 10 segundos
+    
+    // Verificar novas mensagens
+    for (const conversa of conversas.value) {
+      const conversaAntiga = conversasAntigas.find(antiga => antiga.id === conversa.id)
+      if (conversaAntiga && conversa.mensagens_nao_lidas > conversaAntiga.mensagens_nao_lidas) {
+        // Nova mensagem não lida
+        if (conversaSelecionada.value?.id !== conversa.id) {
+          notifyNewMessage(conversa.cliente_nome, conversa.ultima_mensagem || 'Nova mensagem')
+        }
+      }
+    }
+    
+    // Atualizar mensagens da conversa ativa
+    if (conversaSelecionada.value) {
+      await carregarMensagens(conversaSelecionada.value.id)
+    }
+  }, 5000) // 5 segundos para melhor responsividade
 }
 
 const pararAutoRefresh = () => {
@@ -811,6 +838,10 @@ const handleClickOutside = (event: Event) => {
 
 // Lifecycle
 onMounted(async () => {
+  // Verificar suporte e solicitar permissão para notificações
+  checkSupport()
+  await requestPermission()
+  
   await carregarConversas()
   await carregarTemplates()
   iniciarAutoRefresh()

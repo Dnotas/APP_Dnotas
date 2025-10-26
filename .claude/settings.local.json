@@ -53,7 +53,8 @@
       "Bash(system_profiler:*)",
       "Bash(pod clean:*)",
       "Bash(open:*)",
-      "WebFetch(domain:docs.asaas.com)"
+      "WebFetch(domain:docs.asaas.com)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
