@@ -4,6 +4,7 @@ import { organizacoesService, type Funcionario } from '@/services/organizacoes'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<Funcionario | null>(null)
+  const token = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -11,8 +12,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   const initializeAuth = () => {
     const savedUser = localStorage.getItem('auth_user')
+    const savedToken = localStorage.getItem('auth_token')
     if (savedUser) {
       user.value = JSON.parse(savedUser)
+    }
+    if (savedToken) {
+      token.value = savedToken
     }
   }
 
@@ -27,7 +32,9 @@ export const useAuthStore = defineStore('auth', () => {
       
       if (response.success && response.funcionario) {
         user.value = response.funcionario
+        token.value = response.token || 'mock-token' // Adicionar token mock por enquanto
         localStorage.setItem('auth_user', JSON.stringify(response.funcionario))
+        localStorage.setItem('auth_token', token.value)
         
         console.log('AuthStore: Login realizado com sucesso:', response.funcionario)
         return true
@@ -50,8 +57,10 @@ export const useAuthStore = defineStore('auth', () => {
     await organizacoesService.logout()
     
     user.value = null
+    token.value = null
     error.value = null
     localStorage.removeItem('auth_user')
+    localStorage.removeItem('auth_token')
   }
 
   const clearError = () => {
@@ -60,6 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    token,
     isLoading,
     error,
     isAuthenticated,

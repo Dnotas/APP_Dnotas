@@ -1,6 +1,6 @@
 <template>
   <AppLayout>
-    <div class="flex h-full bg-gray-950">
+    <div class="flex h-screen bg-gray-950">
       <!-- Sidebar de conversas -->
       <div class="w-80 bg-gray-900 border-r border-gray-700 flex flex-col">
         <!-- Header da sidebar -->
@@ -576,7 +576,8 @@ const carregarConversas = async () => {
     
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/conversations/attendance/${authStore.user?.filial_id}`, {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
+        'Content-Type': 'application/json'
+        // 'Authorization': `Bearer ${authStore.token}` // Removido temporariamente para teste
       }
     })
     
@@ -850,6 +851,11 @@ const handleClickOutside = (event: Event) => {
 
 // Lifecycle
 onMounted(async () => {
+  console.log('DEBUG: ChatView montado')
+  console.log('DEBUG: AuthStore completo:', authStore)
+  console.log('DEBUG: User:', authStore.user)
+  console.log('DEBUG: Token:', authStore.token)
+  
   // Verificar suporte e solicitar permissão para notificações
   checkSupport()
   await requestPermission()
