@@ -1,12 +1,12 @@
 <template>
   <AppLayout>
-    <div class="flex h-full">
+    <div class="flex h-full bg-gray-950">
       <!-- Sidebar de conversas -->
-      <div class="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div class="w-80 bg-gray-900 border-r border-gray-700 flex flex-col">
         <!-- Header da sidebar -->
-        <div class="px-4 py-6 border-b border-gray-200">
+        <div class="px-4 py-6 border-b border-gray-700">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-medium text-gray-900">Atendimentos</h2>
+            <h2 class="text-lg font-medium text-white">Atendimentos</h2>
             <div class="flex items-center space-x-2">
               <button
                 @click="toggleAtendimentoStatus"
@@ -34,7 +34,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                class="block w-full pl-3 pr-10 py-2 border border-gray-600 rounded-md leading-5 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 placeholder="Buscar cliente..."
               />
               <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -44,7 +44,7 @@
             
             <select
               v-model="filtroStatus"
-              class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              class="block w-full py-2 px-3 border border-gray-600 bg-gray-800 text-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
             >
               <option value="">Todos os status</option>
               <option value="aberto">Aberto</option>
@@ -57,20 +57,20 @@
         
         <!-- Lista de conversas -->
         <div class="flex-1 overflow-y-auto">
-          <div v-if="loading" class="p-4 text-center text-gray-500">
+          <div v-if="loading" class="p-4 text-center text-gray-400">
             Carregando conversas...
           </div>
           
-          <div v-else-if="conversasFiltradas.length === 0" class="p-4 text-center text-gray-500">
+          <div v-else-if="conversasFiltradas.length === 0" class="p-4 text-center text-gray-400">
             Nenhuma conversa encontrada
           </div>
           
-          <div v-else class="divide-y divide-gray-200">
+          <div v-else class="divide-y divide-gray-700">
             <div
               v-for="conversa in conversasFiltradas"
               :key="conversa.id"
-              class="px-4 py-4 hover:bg-gray-50 cursor-pointer transition-colors relative"
-              :class="{ 'bg-primary-50 border-r-2 border-primary-500': conversaSelecionada?.id === conversa.id }"
+              class="px-4 py-4 hover:bg-gray-800 cursor-pointer transition-colors relative"
+              :class="{ 'bg-gray-800 border-r-2 border-primary-500': conversaSelecionada?.id === conversa.id }"
               @click="selecionarConversa(conversa)"
             >
               <!-- Indicador de prioridade -->
@@ -101,7 +101,7 @@
                 
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between">
-                    <p class="text-sm font-medium text-gray-900 truncate">
+                    <p class="text-sm font-medium text-white truncate">
                       {{ conversa.cliente_nome }}
                     </p>
                     <div class="flex items-center space-x-1">
@@ -111,13 +111,13 @@
                       >
                         {{ conversa.mensagens_nao_lidas }}
                       </span>
-                      <span class="text-xs text-gray-500">
+                      <span class="text-xs text-gray-400">
                         {{ formatarTempo(conversa.ultima_mensagem_em) }}
                       </span>
                     </div>
                   </div>
                   
-                  <p class="text-sm font-medium text-gray-700 truncate mt-1">
+                  <p class="text-sm font-medium text-gray-300 truncate mt-1">
                     {{ conversa.titulo }}
                   </p>
                   
@@ -142,7 +142,7 @@
                     </span>
                   </div>
                   
-                  <p class="text-xs text-gray-500 truncate mt-1">
+                  <p class="text-xs text-gray-400 truncate mt-1">
                     {{ conversa.ultima_mensagem || 'Nenhuma mensagem ainda' }}
                   </p>
                 </div>
@@ -155,11 +155,11 @@
       <!-- Área do chat -->
       <div class="flex-1 flex flex-col">
         <!-- Estado vazio -->
-        <div v-if="!conversaSelecionada" class="flex-1 flex items-center justify-center bg-gray-50">
+        <div v-if="!conversaSelecionada" class="flex-1 flex items-center justify-center bg-gray-900">
           <div class="text-center">
-            <ChatIcon class="mx-auto h-12 w-12 text-gray-400" />
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Selecione uma conversa</h3>
-            <p class="mt-1 text-sm text-gray-500">
+            <ChatIcon class="mx-auto h-12 w-12 text-gray-500" />
+            <h3 class="mt-2 text-sm font-medium text-white">Selecione uma conversa</h3>
+            <p class="mt-1 text-sm text-gray-400">
               Escolha uma conversa na lista para começar o atendimento.
             </p>
           </div>
@@ -168,7 +168,7 @@
         <!-- Chat ativo -->
         <div v-else class="flex-1 flex flex-col">
           <!-- Header do chat -->
-          <div class="px-6 py-4 border-b border-gray-200 bg-white">
+          <div class="px-6 py-4 border-b border-gray-700 bg-gray-900">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
                 <div class="flex-shrink-0">
@@ -179,10 +179,10 @@
                   </div>
                 </div>
                 <div>
-                  <h3 class="text-lg font-medium text-gray-900">
+                  <h3 class="text-lg font-medium text-white">
                     {{ conversaSelecionada.cliente_nome }}
                   </h3>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-sm text-gray-400">
                     {{ conversaSelecionada.titulo }}
                   </p>
                 </div>
@@ -250,9 +250,9 @@
           <!-- Área de mensagens -->
           <div
             ref="mensagensContainer"
-            class="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-4"
+            class="flex-1 overflow-y-auto p-6 bg-gray-950 space-y-4"
           >
-            <div v-if="carregandoMensagens" class="text-center text-gray-500">
+            <div v-if="carregandoMensagens" class="text-center text-gray-400">
               Carregando mensagens...
             </div>
             
@@ -311,7 +311,7 @@
           </div>
 
           <!-- Input de mensagem -->
-          <div class="px-6 py-4 bg-white border-t border-gray-200">
+          <div class="px-6 py-4 bg-gray-900 border-t border-gray-700">
             <div v-if="arquivoAnexado" class="mb-3 p-2 bg-gray-100 rounded flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <PaperClipIcon class="h-4 w-4 text-gray-500" />
@@ -327,7 +327,7 @@
                 <textarea
                   v-model="novaMensagem"
                   rows="2"
-                  class="block w-full border border-gray-300 rounded-md resize-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  class="block w-full border border-gray-600 bg-gray-800 text-white rounded-md resize-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm placeholder-gray-400"
                   placeholder="Digite sua mensagem..."
                   :disabled="!podeEnviarMensagem"
                   @keydown.enter.exact.prevent="enviarMensagem"
@@ -569,15 +569,27 @@ const getFileUrl = (url: string) => {
 const carregarConversas = async () => {
   loading.value = true
   try {
+    console.log('DEBUG: Carregando conversas...')
+    console.log('DEBUG: API URL:', import.meta.env.VITE_API_URL)
+    console.log('DEBUG: Filial ID:', authStore.user?.filial_id)
+    console.log('DEBUG: User:', authStore.user)
+    
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/conversations/attendance/${authStore.user?.filial_id}`, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`
       }
     })
     
+    console.log('DEBUG: Response status:', response.status)
+    console.log('DEBUG: Response ok:', response.ok)
+    
     if (response.ok) {
       const data = await response.json()
+      console.log('DEBUG: Conversas carregadas:', data)
       conversas.value = data.data || []
+    } else {
+      const errorData = await response.text()
+      console.error('DEBUG: Erro na resposta:', errorData)
     }
   } catch (error) {
     console.error('Erro ao carregar conversas:', error)
