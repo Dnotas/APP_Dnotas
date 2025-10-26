@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth</title>
+</head>
+<body>
+    <h1>Debug Authentication</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        // Check localStorage
+        const savedUser = localStorage.getItem('auth_user');
+        const savedToken = localStorage.getItem('auth_token');
+        
+        output.innerHTML = `
+            <h2>LocalStorage Data:</h2>
+            <p><strong>auth_user:</strong> ${savedUser}</p>
+            <p><strong>auth_token:</strong> ${savedToken}</p>
+            
+            <h2>Parsed User:</h2>
+            <pre>${savedUser ? JSON.stringify(JSON.parse(savedUser), null, 2) : 'null'}</pre>
+            
+            <button onclick="clearStorage()">Clear Storage</button>
+        `;
+        
+        function clearStorage() {
+            localStorage.removeItem('auth_user');
+            localStorage.removeItem('auth_token');
+            alert('Storage cleared');
+            location.reload();
+        }
+        
+        window.clearStorage = clearStorage;
+    </script>
+</body>
+</html>
