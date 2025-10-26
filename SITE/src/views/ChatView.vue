@@ -571,10 +571,10 @@ const carregarConversas = async () => {
   try {
     console.log('DEBUG: Carregando conversas...')
     console.log('DEBUG: API URL:', import.meta.env.VITE_API_URL)
-    console.log('DEBUG: Filial ID:', authStore.user?.filial_id)
+    console.log('DEBUG: Organizacao ID:', authStore.user?.organizacao_id)
     console.log('DEBUG: User:', authStore.user)
     
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/conversations/attendance/${authStore.user?.filial_id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/conversations/attendance/${authStore.user?.organizacao_id}`, {
       headers: {
         'Content-Type': 'application/json'
         // 'Authorization': `Bearer ${authStore.token}` // Removido temporariamente para teste
@@ -761,7 +761,7 @@ const toggleAtendimentoStatus = async () => {
 
 const carregarTemplates = async () => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/templates/${authStore.user?.filial_id}`)
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/templates/${authStore.user?.organizacao_id}`)
     
     if (response.ok) {
       const data = await response.json()

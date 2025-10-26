@@ -255,13 +255,13 @@ router.post('/messages/read/:conversa_id', async (req, res) => {
 // ====================================
 
 // 5. LISTAR CONVERSAS PARA ATENDIMENTO
-router.get('/conversations/attendance/:filial_id', async (req, res) => {
+router.get('/conversations/attendance/:organizacao_id', async (req, res) => {
   try {
-    const { filial_id } = req.params;
+    const { organizacao_id } = req.params;
     const { funcionario_id, status, limite = 50, offset = 0 } = req.query;
 
     const { data, error } = await supabase.rpc('buscar_conversas_atendimento', {
-      p_filial_id: filial_id,
+      p_filial_id: organizacao_id,
       p_funcionario_id: funcionario_id || null,
       p_status: status || null,
       p_limite: parseInt(limite),
@@ -547,15 +547,15 @@ router.get('/conversations/:conversa_id/details', async (req, res) => {
 // ====================================
 
 // 12. LISTAR TEMPLATES DE MENSAGENS
-router.get('/templates/:filial_id', async (req, res) => {
+router.get('/templates/:organizacao_id', async (req, res) => {
   try {
-    const { filial_id } = req.params;
+    const { organizacao_id } = req.params;
     const { funcionario_id, categoria } = req.query;
 
     let query = supabase
       .from('chat_templates')
       .select('*')
-      .eq('filial_id', filial_id)
+      .eq('filial_id', organizacao_id)
       .eq('ativo', true);
 
     if (funcionario_id) {
