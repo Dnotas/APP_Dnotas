@@ -61,10 +61,10 @@ router.post('/conversations/start', async (req, res) => {
 
     // Verificar se cliente existe e está ativo
     const { data: cliente, error: clienteError } = await supabase
-      .from('users')
-      .select('cnpj, nome, filial_id')
+      .from('clientes')
+      .select('cnpj, nome_empresa, filial_id')
       .eq('cnpj', cliente_cnpj)
-      .eq('ativo', true)
+      .eq('is_active', true)
       .single();
 
     if (clienteError || !cliente) {
@@ -154,8 +154,8 @@ router.post('/messages/send', upload.single('arquivo'), async (req, res) => {
 
     // Buscar nome do cliente
     const { data: cliente, error: clienteError } = await supabase
-      .from('users')
-      .select('nome')
+      .from('clientes')
+      .select('nome_empresa')
       .eq('cnpj', cliente_cnpj)
       .single();
 
@@ -184,7 +184,7 @@ router.post('/messages/send', upload.single('arquivo'), async (req, res) => {
       p_conversa_id: conversa_id,
       p_remetente_tipo: 'cliente',
       p_remetente_id: cliente_cnpj,
-      p_remetente_nome: cliente.nome,
+      p_remetente_nome: cliente.nome_empresa,
       p_conteudo: conteudo,
       p_tipo_conteudo: tipo_conteudo,
       p_arquivo_nome: arquivo_nome,
@@ -197,7 +197,7 @@ router.post('/messages/send', upload.single('arquivo'), async (req, res) => {
       throw error;
     }
 
-    console.log(`📨 Mensagem enviada - Cliente: ${cliente.nome}, Conversa: ${conversa_id}`);
+    console.log(`📨 Mensagem enviada - Cliente: ${cliente.nome_empresa}, Conversa: ${conversa_id}`);
 
     // TODO: Enviar notificação em tempo real para funcionários
 
