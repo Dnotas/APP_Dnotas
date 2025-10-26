@@ -8,6 +8,8 @@ const admin = require('firebase-admin');
 const webhookRoutes = require('../routes/webhook');
 const clientFiliaisRoutes = require('../routes/client-filiais');
 const authAppRoutes = require('../routes/auth-app');
+const chatRoutes = require('../routes/chat');
+const funcionariosRoutes = require('../routes/funcionarios');
 require('dotenv').config();
 
 const app = express();
@@ -62,6 +64,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 app.use(cors());
 app.use(express.json());
 
+// Servir arquivos estáticos do chat
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Rotas do webhook
 app.use('/api/webhook', webhookRoutes);
 
@@ -70,6 +75,12 @@ app.use('/api/client-filiais', clientFiliaisRoutes);
 
 // Rotas de autenticação do app
 app.use('/api/auth-app', authAppRoutes);
+
+// Rotas do sistema de chat
+app.use('/api/chat', chatRoutes);
+
+// Rotas de funcionários
+app.use('/api/funcionarios', funcionariosRoutes);
 
 // Middleware de log simples
 app.use((req, res, next) => {

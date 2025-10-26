@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../models/transaction_model.dart';
 import '../models/message_model.dart';
@@ -371,6 +372,135 @@ class ApiService {
     } catch (e) {
       print('Erro ao buscar relatório processado: $e');
       return null;
+    }
+  }
+
+  // ====================================
+  // MÉTODOS DE CHAT
+  // ====================================
+
+  // Listar conversas do cliente
+  static Future<List<dynamic>> getClientConversations(String cnpj) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/chat/conversations/client/$cnpj'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success']) {
+          return List<dynamic>.from(data['data']);
+        }
+      }
+      
+      return [];
+    } catch (e) {
+      print('Erro ao buscar conversas: $e');
+      return [];
+    }
+  }
+
+  // Criar nova conversa
+  static Future<Map<String, dynamic>> createConversation({
+    required String cnpj,
+    required String title,
+    required String description,
+    required String priority,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/chat/conversations/start'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'cliente_cnpj': cnpj,
+          'titulo': title,
+          'descricao': description,
+          'prioridade': priority,
+        }),
+      );
+
+      return json.decode(response.body);
+    } catch (e) {
+      print('Erro ao criar conversa: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  // Buscar mensagens de uma conversa
+  static Future<List<Map<String, dynamic>>> getConversationMessages(String conversationId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/chat/messages/$conversationId'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success']) {
+          return List<Map<String, dynamic>>.from(data['data']);
+        }
+      }
+      
+      return [];
+    } catch (e) {
+      print('Erro ao buscar mensagens: $e');
+      return [];
+    }
+  }
+
+  // Enviar mensagem
+  static Future<Map<String, dynamic>> sendMessage({
+    required String conversationId,
+    required String cnpj,
+    required String content,
+    File? file,
+  }) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/api/chat/messages/send'),
+      );
+
+      request.fields['conversa_id'] = conversationId;
+      request.fields['cliente_cnpj'] = cnpj;
+      request.fields['conteudo'] = content;
+      request.fields['tipo_conteudo'] = file != null ? 'arquivo' : 'texto';
+
+      if (file != null) {
+        request.files.add(await http.MultipartFile.fromPath('arquivo', file.path));
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return json.decode(response.body);
+    } catch (e) {
+      print('Erro ao enviar mensagem: $e');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  // Marcar mensagens como lidas
+  static Future<Map<String, dynamic>> markMessagesAsRead(String conversationId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/chat/messages/read/$conversationId'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      return json.decode(response.body);
+    } catch (e) {
+      print('Erro ao marcar mensagens como lidas: $e');
+      return {'success': false, 'error': e.toString()};
     }
   }
 }
