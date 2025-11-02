@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/boleto.dart';
 import '../models/customer.dart';
 import './boleto_cache_service.dart';
@@ -8,36 +9,120 @@ class AsaasService {
   static const String _baseUrl = 'https://api.asaas.com/v3';
   static const String _sandboxUrl = 'https://api-sandbox.asaas.com/v3';
   
-  // Chaves da API fornecidas
-  static const String _cpfApiKey = '\$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmRlOTdhM2E5LTVmYjQtNDA4MS04OWMwLTdhZDZmYTE4MzQxNjo6\$aach_aa21017d-ea4b-4ab6-8f1b-a8b17ba8d0b8';
-  static const String _cnpjApiKey = r'$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2';
-  
-  // Chave oficial da empresa (CNPJ)  
-  static const String _testApiKey = r'$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2';
+  /// Busca as chaves Asaas ativas da organização/filial do usuário logado
+  static Future<List<String>> _getActiveAsaasKeys(String cnpj) async {
+    try {
+      print('🔍 Buscando chaves Asaas para CNPJ: $cnpj');
+      
+      // Remover formatação do CNPJ
+      final cleanCnpj = cnpj.replaceAll(RegExp(r'[^0-9]'), '');
+      print('🧹 CNPJ limpo: $cleanCnpj');
+      
+      // Buscar cliente pelo CNPJ para obter filial_id
+      final clientResponse = await Supabase.instance.client
+          .from('clientes')
+          .select('filial_id, nome_empresa')
+          .eq('cnpj', cleanCnpj)
+          .single();
 
-  /// Retorna a chave da API baseada no tipo de documento
-  static String _getApiKey(String documentType) {
-    return documentType.toLowerCase() == 'cpf' ? _cpfApiKey : _cnpjApiKey;
+      final filialId = clientResponse['filial_id'];
+      final nomeEmpresa = clientResponse['nome_empresa'];
+      
+      if (filialId == null) {
+        print('❌ Filial não encontrada para o CNPJ: $cleanCnpj');
+        
+        // Tentar buscar por CNPJ formatado também
+        print('🔄 Tentando buscar CNPJ com formatação...');
+        final clientResponse2 = await Supabase.instance.client
+            .from('clientes')
+            .select('filial_id, nome_empresa')
+            .eq('cnpj', cnpj)
+            .single();
+            
+        final filialId2 = clientResponse2['filial_id'];
+        if (filialId2 == null) {
+          print('❌ Cliente não encontrado nem com CNPJ limpo nem formatado');
+          return [];
+        }
+        
+        print('✅ Cliente encontrado com CNPJ formatado: ${clientResponse2['nome_empresa']}');
+        return _getKeysFromFilial(filialId2);
+      }
+
+      print('✅ Cliente encontrado: $nomeEmpresa');
+      print('🏢 Filial ID: $filialId');
+
+      return _getKeysFromFilial(filialId);
+    } catch (e) {
+      print('❌ Erro ao buscar chaves Asaas: $e');
+      
+      // Fallback: usar chaves da matriz diretamente
+      print('🔄 Tentando fallback para matriz...');
+      return _getKeysFromFilial('11111111-1111-1111-1111-111111111111');
+    }
   }
 
-  /// Retorna a chave de teste
-  static String _getTestApiKey() {
-    return _testApiKey;
+  /// Busca chaves de uma filial específica
+  static Future<List<String>> _getKeysFromFilial(String filialId) async {
+    try {
+      print('🔑 Buscando chaves da filial: $filialId');
+      
+      // Buscar chaves ativas da filial
+      final response = await Supabase.instance.client
+          .from('filiais')
+          .select('asaas_keys, nome')
+          .eq('id', filialId)
+          .single();
+
+      final asaasKeys = response['asaas_keys'] as List?;
+      final nomeFilial = response['nome'];
+      
+      print('🏢 Filial: $nomeFilial');
+      
+      if (asaasKeys == null || asaasKeys.isEmpty) {
+        print('❌ Nenhuma chave Asaas encontrada para a filial: $nomeFilial');
+        return [];
+      }
+
+      print('📋 Chaves encontradas no banco: ${asaasKeys.length}');
+
+      // Filtrar apenas chaves ativas
+      List<String> activeKeys = [];
+      for (var keyData in asaasKeys) {
+        if (keyData['ativo'] == true && keyData['key'] != null) {
+          activeKeys.add(keyData['key']);
+          print('✅ Chave ativa: ${keyData['nome']} - ${(keyData['key'] as String).substring(0, 30)}...');
+        } else {
+          print('⚠️ Chave inativa: ${keyData['nome']}');
+        }
+      }
+
+      print('🎯 Total de chaves ativas encontradas: ${activeKeys.length}');
+      return activeKeys;
+    } catch (e) {
+      print('❌ Erro ao buscar chaves da filial $filialId: $e');
+      return [];
+    }
   }
 
-  /// Headers para teste
-  static Map<String, String> _getTestHeaders() {
+  /// Headers para requisições usando a primeira chave ativa
+  static Future<Map<String, String>> _getHeaders(String cnpj) async {
+    final keys = await _getActiveAsaasKeys(cnpj);
+    if (keys.isEmpty) {
+      throw Exception('Nenhuma chave Asaas ativa encontrada para esta organização');
+    }
+    
     return {
       'accept': 'application/json',
-      'access_token': _getTestApiKey(),
+      'access_token': keys.first, // Usa a primeira chave ativa
     };
   }
 
-  /// Headers padrão para requisições
-  static Map<String, String> _getHeaders(String documentType) {
+  /// Headers com chave específica
+  static Map<String, String> _getHeadersWithKey(String apiKey) {
     return {
       'accept': 'application/json',
-      'access_token': _getApiKey(documentType),
+      'access_token': apiKey,
     };
   }
 
@@ -46,11 +131,10 @@ class AsaasService {
     try {
       // Remove formatação do documento
       final cleanDocument = document.replaceAll(RegExp(r'[^0-9]'), '');
-      final documentType = cleanDocument.length == 11 ? 'cpf' : 'cnpj';
       
       final response = await http.get(
         Uri.parse('$_baseUrl/customers?cpfCnpj=$cleanDocument'),
-        headers: _getHeaders(documentType),
+        headers: await _getHeaders(cleanDocument),
       );
 
       if (response.statusCode == 200) {
@@ -78,29 +162,80 @@ class AsaasService {
     );
   }
 
-  /// Busca boletos direto da API (sem cache)
+  /// Busca boletos direto da API (sem cache) - tenta todas as chaves ativas
   static Future<List<Boleto>> _fetchBoletosByDocumentFromApi(String document) async {
     try {
-      // Primeiro, encontra o ID do cliente
-      final customerId = await findCustomerByDocument(document);
-      if (customerId == null) {
-        print('Cliente não encontrado para documento: $document');
+      print('🚀 Iniciando busca de boletos para documento: $document');
+      
+      // Remove formatação do documento
+      final cleanDocument = document.replaceAll(RegExp(r'[^0-9]'), '');
+      
+      // Buscar todas as chaves ativas da organização
+      final activeKeys = await _getActiveAsaasKeys(cleanDocument);
+      if (activeKeys.isEmpty) {
+        print('❌ Nenhuma chave Asaas ativa encontrada');
         return [];
       }
 
-      // Remove formatação do documento para determinar tipo
-      final cleanDocument = document.replaceAll(RegExp(r'[^0-9]'), '');
-      final documentType = cleanDocument.length == 11 ? 'cpf' : 'cnpj';
+      print('🔑 Testando ${activeKeys.length} chaves...');
+      
+      // Tenta com cada chave até encontrar o cliente
+      String? customerId;
+      String? workingKey;
+      
+      for (int i = 0; i < activeKeys.length; i++) {
+        String apiKey = activeKeys[i];
+        try {
+          print('🧪 Testando chave ${i + 1}/${activeKeys.length}: ${apiKey.substring(0, 30)}...');
+          
+          final response = await http.get(
+            Uri.parse('$_baseUrl/customers?cpfCnpj=$cleanDocument'),
+            headers: _getHeadersWithKey(apiKey),
+          );
 
-      // Busca os pagamentos do cliente
+          print('📡 Status da requisição: ${response.statusCode}');
+
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            final customers = data['data'] as List;
+            
+            print('👥 Clientes encontrados: ${customers.length}');
+            
+            if (customers.isNotEmpty) {
+              customerId = customers.first['id'];
+              workingKey = apiKey;
+              print('✅ Cliente encontrado! ID: $customerId');
+              break;
+            }
+          } else {
+            print('⚠️ Erro na API: ${response.statusCode} - ${response.body}');
+          }
+        } catch (e) {
+          print('❌ Erro ao testar chave ${i + 1}: $e');
+          continue;
+        }
+      }
+
+      if (customerId == null || workingKey == null) {
+        print('❌ Cliente não encontrado em nenhuma conta Asaas para documento: $cleanDocument');
+        return [];
+      }
+
+      print('💰 Buscando boletos do cliente...');
+      
+      // Busca os pagamentos do cliente com a chave que funcionou
       final response = await http.get(
         Uri.parse('$_baseUrl/payments?customer=$customerId&limit=100'),
-        headers: _getHeaders(documentType),
+        headers: _getHeadersWithKey(workingKey),
       );
+
+      print('📡 Status busca pagamentos: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final payments = data['data'] as List;
+        
+        print('📋 Total de pagamentos: ${payments.length}');
         
         List<Boleto> boletos = [];
         for (var payment in payments) {
@@ -113,13 +248,14 @@ class AsaasService {
         // Ordena por data de vencimento (mais próximos primeiro)
         boletos.sort((a, b) => a.dueDate.compareTo(b.dueDate));
         
+        print('🎯 ${boletos.length} boletos encontrados e processados!');
         return boletos;
       } else {
-        print('Erro ao buscar boletos: ${response.statusCode} - ${response.body}');
+        print('❌ Erro ao buscar boletos: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e) {
-      print('Erro ao buscar boletos: $e');
+      print('💥 Erro geral ao buscar boletos: $e');
       return [];
     }
   }
@@ -157,11 +293,11 @@ class AsaasService {
   }
 
   /// Busca detalhes de um boleto específico
-  static Future<Boleto?> getBoletoDetails(String boletoId, String documentType) async {
+  static Future<Boleto?> getBoletoDetails(String boletoId, String cnpj) async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/payments/$boletoId'),
-        headers: _getHeaders(documentType),
+        headers: await _getHeaders(cnpj),
       );
 
       if (response.statusCode == 200) {
@@ -207,107 +343,111 @@ class AsaasService {
     return daysTo >= 0 && daysTo <= days;
   }
 
-  /// TESTE: Lista todos os clientes da sua conta para debug
-  static Future<void> testListCustomers() async {
-    try {
-      print('🧪 TESTE: Listando clientes da conta de teste...');
-      print('🧪 DEBUG: Chave sendo enviada: ${_getTestApiKey()}');
-      print('🧪 DEBUG: Headers: ${_getTestHeaders()}');
-      
-      // Testa PRODUÇÃO com headers corretos
-      print('🧪 TESTE: Tentando PRODUÇÃO: $_baseUrl');
-      var response = await http.get(
-        Uri.parse('$_baseUrl/customers?limit=50'),
-        headers: _getTestHeaders(),
-      );
-      print('🧪 TESTE: Status PRODUÇÃO: ${response.statusCode}');
-      print('🧪 TESTE: Response body: ${response.body}');
 
-      print('🧪 TESTE: Status da resposta: ${response.statusCode}');
+  // ====================================
+  // MÉTODOS PARA GERENCIAR CHAVES ASAAS
+  // ====================================
+
+  /// Adiciona nova chave Asaas para a organização atual
+  static Future<bool> addAsaasKey({
+    required String nome,
+    required String apiKey,
+    bool ativo = true,
+  }) async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return false;
+
+      final userResponse = await Supabase.instance.client
+          .from('users')
+          .select('filial_id')
+          .eq('id', user.id)
+          .single();
+
+      final organizacaoId = userResponse['filial_id'];
       
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final customers = data['data'] as List;
-        
-        print('🧪 TESTE: ${customers.length} clientes encontrados:');
-        for (var customer in customers) {
-          print('   • ID: ${customer['id']}');
-          print('   • Nome: ${customer['name']}');
-          print('   • CPF/CNPJ: ${customer['cpfCnpj']}');
-          print('   • Email: ${customer['email']}');
-          print('   ---');
-        }
-      } else {
-        print('🧪 TESTE: Erro ${response.statusCode}: ${response.body}');
-      }
+      // Chamar função SQL para adicionar chave
+      await Supabase.instance.client.rpc('add_asaas_key', params: {
+        'p_organizacao_id': organizacaoId,
+        'p_nome_conta': nome,
+        'p_api_key': apiKey,
+        'p_ativo': ativo,
+      });
+
+      print('Chave Asaas adicionada com sucesso: $nome');
+      return true;
     } catch (e) {
-      print('🧪 TESTE: Erro na requisição: $e');
+      print('Erro ao adicionar chave Asaas: $e');
+      return false;
     }
   }
 
-  /// TESTE: Busca boletos usando sua chave de teste
-  static Future<List<Boleto>> testGetBoletosByDocument(String document) async {
+  /// Lista todas as chaves Asaas da organização
+  static Future<List<Map<String, dynamic>>> listAsaasKeys() async {
     try {
-      print('🧪 TESTE: Buscando boletos para documento: $document');
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return [];
+
+      final userResponse = await Supabase.instance.client
+          .from('users')
+          .select('filial_id')
+          .eq('id', user.id)
+          .single();
+
+      final organizacaoId = userResponse['filial_id'];
       
-      // Primeiro, encontra o ID do cliente
-      final cleanDocument = document.replaceAll(RegExp(r'[^0-9]'), '');
-      
-      final customerResponse = await http.get(
-        Uri.parse('$_baseUrl/customers?cpfCnpj=$cleanDocument'),
-        headers: _getTestHeaders(),
-      );
+      // Chamar função SQL para listar chaves
+      final response = await Supabase.instance.client.rpc('get_active_asaas_keys', params: {
+        'p_organizacao_id': organizacaoId,
+      });
 
-      print('🧪 TESTE: Busca cliente - Status: ${customerResponse.statusCode}');
-
-      if (customerResponse.statusCode != 200) {
-        print('🧪 TESTE: Erro ao buscar cliente: ${customerResponse.body}');
-        return [];
-      }
-
-      final customerData = json.decode(customerResponse.body);
-      final customers = customerData['data'] as List;
-      
-      if (customers.isEmpty) {
-        print('🧪 TESTE: Cliente não encontrado');
-        return [];
-      }
-
-      final customerId = customers.first['id'];
-      print('🧪 TESTE: Cliente encontrado - ID: $customerId');
-
-      // Busca os pagamentos do cliente
-      final paymentsResponse = await http.get(
-        Uri.parse('$_baseUrl/payments?customer=$customerId&limit=100'),
-        headers: _getTestHeaders(),
-      );
-
-      print('🧪 TESTE: Busca pagamentos - Status: ${paymentsResponse.statusCode}');
-
-      if (paymentsResponse.statusCode == 200) {
-        final paymentsData = json.decode(paymentsResponse.body);
-        final payments = paymentsData['data'] as List;
-        
-        print('🧪 TESTE: ${payments.length} pagamentos encontrados');
-        
-        List<Boleto> boletos = [];
-        for (var payment in payments) {
-          print('🧪 TESTE: Payment - Type: ${payment['billingType']}, Status: ${payment['status']}, Value: ${payment['value']}');
-          
-          if (payment['billingType'] == 'BOLETO') {
-            boletos.add(Boleto.fromAsaasJson(payment));
-          }
-        }
-        
-        print('🧪 TESTE: ${boletos.length} boletos filtrados');
-        return boletos;
-      } else {
-        print('🧪 TESTE: Erro ao buscar pagamentos: ${paymentsResponse.body}');
-        return [];
-      }
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('🧪 TESTE: Erro: $e');
+      print('Erro ao listar chaves Asaas: $e');
       return [];
+    }
+  }
+
+  /// Desativa uma chave Asaas específica
+  static Future<bool> deactivateAsaasKey(String keyId) async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return false;
+
+      final userResponse = await Supabase.instance.client
+          .from('users')
+          .select('filial_id')
+          .eq('id', user.id)
+          .single();
+
+      final organizacaoId = userResponse['filial_id'];
+      
+      // Chamar função SQL para desativar chave
+      await Supabase.instance.client.rpc('deactivate_asaas_key', params: {
+        'p_organizacao_id': organizacaoId,
+        'p_key_id': keyId,
+      });
+
+      print('Chave Asaas desativada com sucesso');
+      return true;
+    } catch (e) {
+      print('Erro ao desativar chave Asaas: $e');
+      return false;
+    }
+  }
+
+  /// Testa uma chave Asaas (verifica se funciona)
+  static Future<bool> testAsaasKey(String apiKey) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/customers?limit=1'),
+        headers: _getHeadersWithKey(apiKey),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Erro ao testar chave Asaas: $e');
+      return false;
     }
   }
 }

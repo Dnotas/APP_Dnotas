@@ -54,7 +54,9 @@
       "Bash(pod clean:*)",
       "Bash(open:*)",
       "WebFetch(domain:docs.asaas.com)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(keytool:*)",
+      "Bash(sips:*)"
     ],
     "deny": [],
     "ask": []

@@ -121,12 +121,12 @@ class _BoletosScreenState extends State<BoletosScreen> with TickerProviderStateM
       print('🧪 INICIANDO TESTE COM SUA CHAVE...');
       
       // Primeiro, lista todos os clientes da sua conta
-      await AsaasService.testListCustomers();
+      print('🧪 Testando busca com chaves do banco de dados...');
       
       // Depois tenta buscar boletos para um documento específico
       // CNPJ da AM CONTABILIDADE LTDA que existe na sua conta Asaas
       final testDocument = '24831337000109';
-      final boletos = await AsaasService.testGetBoletosByDocument(testDocument);
+      final boletos = await AsaasService.getBoletosByDocument(testDocument);
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

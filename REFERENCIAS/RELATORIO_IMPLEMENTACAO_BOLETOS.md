@@ -427,6 +427,23 @@ Android/
 
 tokin assas
 noem : 
-teste2
+DNOTAS
 token:
-$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjA5NDRiYTFhLTFlMTgtNDc0OC1iNmQwLWJhNzk5ZWU3ZmRlNDo6JGFhY2hfNTA5YTI4YmMtZjZmZC00YWNjLTgxM2UtODdhNDc0OGQ1MWNk
+$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjhkYjFiZGJlLTA4NGMtNDdlNi05YjUyLTNlNGQ3NDMxNzgyZTo6JGFhY2hfOTBkZWVmOTktYjliZC00MzIwLWE2ZjktM2ZiZDU4OWU0OTBl
+
+CNPJ
+
+$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2
+
+
+curl --request GET \
+     --url https://api.asaas.com/v3/customers \
+     --header 'accept: application/json' \
+     --header 'access_token: $aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2'
+
+
+curl --request GET \
+       --url 'https://api.asaas.com/v3/customers?cpfCnpj=24831337000109' \
+       --header 'accept: application/json' \
+       --header 'access_token: $aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjhkYjFiZGJlLTA4NGMtNDdlNi05YjUyLTNlNGQ3NDMxNzgyZTo6$aach_90
+  deef99-b9bd-4320-a6f9-3fbd589e490e

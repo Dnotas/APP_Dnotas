@@ -400,7 +400,7 @@
                   <select v-model="novoFuncionario.filial_id" required 
                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
                     <option value="">Selecione uma filial</option>
-                    <option value="matriz-id">Matriz</option>
+                    <option value="11111111-1111-1111-1111-111111111111">Matriz</option>
                     <option v-for="filial in filiais" :key="filial.id" :value="filial.id">
                       {{ filial.nome }}
                     </option>
@@ -896,7 +896,7 @@ const salvarCliente = async () => {
         cnpj: cnpjLimpo, // Salvar só números
         nome_empresa: novoCliente.value.nome,
         senha: novoCliente.value.senha,
-        filial_id: 'matriz-id', // ID que existe na tabela filiais
+        filial_id: '11111111-1111-1111-1111-111111111111', // ID da matriz com chaves Asaas
         is_active: true
       }])
       .select()

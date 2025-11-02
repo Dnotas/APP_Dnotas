@@ -575,7 +575,7 @@ const carregarConversas = async () => {
     console.log('DEBUG: User:', authStore.user)
     
     // Mapear organizacao_id para filial_id 
-    const filialId = authStore.user?.organizacao_id === 'matriz-master' ? 'matriz-id' : authStore.user?.organizacao_id
+    const filialId = authStore.user?.organizacao_id === 'matriz-master' ? '11111111-1111-1111-1111-111111111111' : authStore.user?.organizacao_id
     console.log('DEBUG: Filial ID mapeado:', filialId)
     
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/conversations/attendance/${filialId}`, {
@@ -765,7 +765,7 @@ const toggleAtendimentoStatus = async () => {
 
 const carregarTemplates = async () => {
   try {
-    const filialId = authStore.user?.organizacao_id === 'matriz-master' ? 'matriz-id' : authStore.user?.organizacao_id
+    const filialId = authStore.user?.organizacao_id === 'matriz-master' ? '11111111-1111-1111-1111-111111111111' : authStore.user?.organizacao_id
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/templates/${filialId}`)
     
     if (response.ok) {
