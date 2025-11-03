@@ -7,14 +7,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Dnotas App</string>
+	<string>Dnotas</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>background-processing</string>
 		<string>remote-notification</string>
 	</array>
 	<key>CFBundleInfoDictionaryVersion</key>

@@ -13,22 +13,12 @@ ON CONFLICT (id) DO NOTHING;
 -- 3. Verificar se matriz foi criada/existe
 SELECT 'MATRIZ VERIFICADA' as info, id, nome, codigo FROM filiais WHERE codigo = 'matriz' OR nome ILIKE '%matriz%';
 
--- 4. Agora inserir as chaves Asaas
-SELECT 'INSERINDO CHAVE CPF' as info;
-SELECT add_asaas_key(
-    '11111111-1111-1111-1111-111111111111',
-    'Conta CPF - Matriz',
-    '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmRlOTdhM2E5LTVmYjQtNDA4MS04OWMwLTdhZDZmYTE4MzQxNjo6JGFhY2hfYWEyMTAxN2QtZWE0Yi00YWI2LThmMWItYThiMTdiYThkMGI4',
-    true
-) as resultado_cpf;
+-- 4. CHAVES REMOVIDAS POR SEGURANÇA
+-- As chaves Asaas devem ser inseridas manualmente pelo administrador
+-- usando a interface do sistema ou chamadas diretas à função add_asaas_key()
 
-SELECT 'INSERINDO CHAVE CNPJ' as info;
-SELECT add_asaas_key(
-    '11111111-1111-1111-1111-111111111111',
-    'Conta CNPJ - Matriz',
-    '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2',
-    true
-) as resultado_cnpj;
+SELECT 'CHAVES ASAAS REMOVIDAS' as info;
+SELECT 'Use a interface do sistema para adicionar as chaves de API do Asaas' as instrucao;
 
 -- 5. Verificar chaves inseridas
 SELECT 'CHAVES ATIVAS' as info;

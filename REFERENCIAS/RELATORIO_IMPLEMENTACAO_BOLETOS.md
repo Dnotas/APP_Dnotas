@@ -425,25 +425,23 @@ Android/
 
 
 
-tokin assas
-noem : 
-DNOTAS
-token:
-$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjhkYjFiZGJlLTA4NGMtNDdlNi05YjUyLTNlNGQ3NDMxNzgyZTo6JGFhY2hfOTBkZWVmOTktYjliZC00MzIwLWE2ZjktM2ZiZDU4OWU0OTBl
+🔒 CHAVES ASAAS REMOVIDAS POR SEGURANÇA
 
-CNPJ
+⚠️ As chaves de API do Asaas foram removidas desta documentação por questões de segurança.
 
-$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2
+Para testar a integração:
+1. Use suas próprias chaves de teste/sandbox do Asaas
+2. Configure as chaves através da interface administrativa do sistema
+3. Use as funções do banco de dados para gerenciar chaves de forma segura
 
+Exemplo de curl para testes (substitua YOUR_API_KEY):
 
 curl --request GET \
      --url https://api.asaas.com/v3/customers \
      --header 'accept: application/json' \
-     --header 'access_token: $aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2'
-
+     --header 'access_token: YOUR_API_KEY'
 
 curl --request GET \
        --url 'https://api.asaas.com/v3/customers?cpfCnpj=24831337000109' \
        --header 'accept: application/json' \
-       --header 'access_token: $aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjhkYjFiZGJlLTA4NGMtNDdlNi05YjUyLTNlNGQ3NDMxNzgyZTo6$aach_90
-  deef99-b9bd-4320-a6f9-3fbd589e490e
+       --header 'access_token: YOUR_API_KEY'

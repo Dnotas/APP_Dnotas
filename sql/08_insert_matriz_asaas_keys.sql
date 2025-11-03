@@ -1,29 +1,26 @@
 -- ====================================
--- INSERIR CHAVES ASAAS DA MATRIZ
+-- CHAVES ASAAS REMOVIDAS POR SEGURANÇA
 -- ====================================
--- Script para adicionar as chaves Asaas da matriz no banco de dados
+-- IMPORTANTE: As chaves de API do Asaas foram removidas deste arquivo por segurança.
+-- Para adicionar chaves Asaas ao sistema:
+--
+-- 1. Use a interface administrativa do sistema
+-- 2. Ou execute manualmente:
+--    SELECT add_asaas_key('FILIAL_ID', 'NOME_DA_CONTA', 'SUA_CHAVE_API', true);
+--
+-- Exemplo:
+-- SELECT add_asaas_key(
+--     '11111111-1111-1111-1111-111111111111'::UUID,
+--     'Conta Principal',
+--     'sua_chave_api_aqui',
+--     true
+-- );
 
 -- Primeiro, vamos verificar qual o ID da matriz
 SELECT 'VERIFICANDO MATRIZ' as info, id, nome, codigo FROM filiais WHERE codigo = 'matriz' OR nome ILIKE '%matriz%';
 
--- Inserir as duas chaves Asaas para a matriz
--- Usando o ID padrão da matriz: 11111111-1111-1111-1111-111111111111
-
--- Chave 1 (CPF)
-SELECT add_asaas_key(
-    '11111111-1111-1111-1111-111111111111'::UUID,
-    'Conta CPF - Matriz',
-    '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmRlOTdhM2E5LTVmYjQtNDA4MS04OWMwLTdhZDZmYTE4MzQxNjo6JGFhY2hfYWEyMTAxN2QtZWE0Yi00YWI2LThmMWItYThiMTdiYThkMGI4',
-    true
-) as "Chave CPF Adicionada";
-
--- Chave 2 (CNPJ)
-SELECT add_asaas_key(
-    '11111111-1111-1111-1111-111111111111'::UUID,
-    'Conta CNPJ - Matriz', 
-    '$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6JGFhY2hfZWIzMmFiZmMtNzQ3OS00N2ZlLWI0NDEtYmMwZjhmNGQ4YWU2',
-    true
-) as "Chave CNPJ Adicionada";
+SELECT 'CHAVES REMOVIDAS POR SEGURANÇA' as aviso;
+SELECT 'Use a interface do sistema para adicionar chaves Asaas' as instrucao;
 
 -- Verificar se as chaves foram inseridas corretamente
 SELECT 'CHAVES ATIVAS DA MATRIZ' as info;

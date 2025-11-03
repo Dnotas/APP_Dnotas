@@ -1,23 +1,89 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Serviço para configurar webhooks do Asaas
 /// Este arquivo deve ser usado no backend (APIS_APP) para receber webhooks
 class WebhookService {
   static const String _baseUrl = 'https://api.asaas.com/v3';
   
-  // Chaves da API
-  static const String _cpfApiKey = '\$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmRlOTdhM2E5LTVmYjQtNDA4MS04OWMwLTdhZDZmYTE4MzQxNjo6\$aach_aa21017d-ea4b-4ab6-8f1b-a8b17ba8d0b8';
-  static const String _cnpjApiKey = '\$aact_prod_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmIzNGI0YWNjLWZkZmYtNDM2Yy04NWJiLWJiYTk0YzAyYjljODo6\$aach_eb32abfc-7479-47fe-b441-bc0f8f4d8ae6';
+  /// Busca chaves Asaas ativas da organização/filial do usuário logado
+  static Future<List<String>> _getActiveAsaasKeys() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        print('❌ Usuário não logado para buscar chaves Asaas');
+        return [];
+      }
+
+      // Buscar filial_id do usuário
+      final userResponse = await Supabase.instance.client
+          .from('users')
+          .select('filial_id')
+          .eq('id', user.id)
+          .single();
+
+      final filialId = userResponse['filial_id'];
+      
+      if (filialId == null) {
+        print('❌ Filial não encontrada para o usuário');
+        return [];
+      }
+
+      // Buscar chaves ativas da filial
+      final response = await Supabase.instance.client
+          .from('filiais')
+          .select('asaas_keys, nome')
+          .eq('id', filialId)
+          .single();
+
+      final asaasKeys = response['asaas_keys'] as List?;
+      
+      if (asaasKeys == null || asaasKeys.isEmpty) {
+        print('❌ Nenhuma chave Asaas encontrada para a filial');
+        return [];
+      }
+
+      // Filtrar apenas chaves ativas
+      List<String> activeKeys = [];
+      for (var keyData in asaasKeys) {
+        if (keyData['ativo'] == true && keyData['key'] != null) {
+          activeKeys.add(keyData['key']);
+        }
+      }
+
+      print('🎯 ${activeKeys.length} chaves ativas encontradas para webhooks');
+      return activeKeys;
+    } catch (e) {
+      print('❌ Erro ao buscar chaves Asaas: $e');
+      return [];
+    }
+  }
+
+  /// Busca primeira chave ativa disponível
+  static Future<String?> _getFirstActiveKey() async {
+    final keys = await _getActiveAsaasKeys();
+    return keys.isNotEmpty ? keys.first : null;
+  }
 
   /// Configurar webhook para CPF
   static Future<bool> setupCpfWebhook(String webhookUrl) async {
-    return await _setupWebhook(_cpfApiKey, webhookUrl, 'CPF');
+    final apiKey = await _getFirstActiveKey();
+    if (apiKey == null) {
+      print('❌ Nenhuma chave Asaas ativa encontrada para configurar webhook CPF');
+      return false;
+    }
+    return await _setupWebhook(apiKey, webhookUrl, 'CPF');
   }
 
   /// Configurar webhook para CNPJ
   static Future<bool> setupCnpjWebhook(String webhookUrl) async {
-    return await _setupWebhook(_cnpjApiKey, webhookUrl, 'CNPJ');
+    final apiKey = await _getFirstActiveKey();
+    if (apiKey == null) {
+      print('❌ Nenhuma chave Asaas ativa encontrada para configurar webhook CNPJ');
+      return false;
+    }
+    return await _setupWebhook(apiKey, webhookUrl, 'CNPJ');
   }
 
   /// Configurar webhook genérico
@@ -73,7 +139,11 @@ class WebhookService {
   /// Listar webhooks existentes
   static Future<List<Map<String, dynamic>>> listWebhooks(String documentType) async {
     try {
-      final apiKey = documentType.toLowerCase() == 'cpf' ? _cpfApiKey : _cnpjApiKey;
+      final apiKey = await _getFirstActiveKey();
+      if (apiKey == null) {
+        print('❌ Nenhuma chave Asaas ativa encontrada para listar webhooks');
+        return [];
+      }
       
       final response = await http.get(
         Uri.parse('$_baseUrl/webhooks'),
@@ -98,7 +168,11 @@ class WebhookService {
   /// Deletar webhook
   static Future<bool> deleteWebhook(String webhookId, String documentType) async {
     try {
-      final apiKey = documentType.toLowerCase() == 'cpf' ? _cpfApiKey : _cnpjApiKey;
+      final apiKey = await _getFirstActiveKey();
+      if (apiKey == null) {
+        print('❌ Nenhuma chave Asaas ativa encontrada para deletar webhook');
+        return false;
+      }
       
       final response = await http.delete(
         Uri.parse('$_baseUrl/webhooks/$webhookId'),
